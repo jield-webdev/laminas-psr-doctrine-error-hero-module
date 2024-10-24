@@ -264,7 +264,7 @@ final class Logging
         return false;
     }
 
-    private function sendMail(int $priority, string $errorMessage, array $extra, string $subject): void
+    private function sendMail(string $priority, string $errorMessage, array $extra, string $subject): void
     {
         if (!$this->message instanceof Message || !$this->mailMessageTransport instanceof TransportInterface) {
             return;
