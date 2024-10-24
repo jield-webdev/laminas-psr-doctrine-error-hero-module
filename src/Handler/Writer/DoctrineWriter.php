@@ -64,6 +64,7 @@ final class DoctrineWriter extends AbstractWriter
         Assert::isInstanceOf(new $entityName(), LogEntityInterface::class);
 
         //Find the latest error entity
+        /** @var LogEntityInterface $latestErrorEntity */
         $latestErrorEntity = $this->entityManager->getRepository($entityName)->findOneBy([
             'file'         => $errorFile,
             'line'         => $errorLine,
@@ -72,7 +73,7 @@ final class DoctrineWriter extends AbstractWriter
         ], ['date' => Order::Ascending->value]);
 
         //The last entity should exist and should be within the time range
-        if ($latestErrorEntity && $latestErrorEntity->getDate() > (new \DateTime())->getTimestamp() - $sameErrorLogTimeRange) {
+        if ($latestErrorEntity && $latestErrorEntity->getDate() > new \DateTime('-' . $sameErrorLogTimeRange . ' seconds')) {
             return true;
         }
 
