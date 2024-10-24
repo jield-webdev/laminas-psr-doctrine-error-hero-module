@@ -7,7 +7,7 @@ namespace ErrorHeroModule;
 use Doctrine\ORM\EntityManager;
 use ErrorHeroModule\Command\Preview\ErrorPreviewConsoleCommand;
 use ErrorHeroModule\Controller\ErrorPreviewController;
-use ErrorHeroModule\Transformer\Doctrine;
+use ErrorHeroModule\Transformer\DoctrineTransformer;
 use Laminas\ModuleManager\Feature\ConfigProviderInterface;
 use Laminas\ModuleManager\Feature\DependencyIndicatorInterface;
 use Laminas\ModuleManager\Listener\ConfigListener;
@@ -34,9 +34,7 @@ final class Module implements ConfigProviderInterface, DependencyIndicatorInterf
             return;
         }
 
-        /** @var array<string, mixed> $configuration */
-        $configuration = $container->get('config');
-        Doctrine::transform($container, $configuration);
+        DoctrineTransformer::transform($container, $container->get(EntityManager::class));
     }
 
     public function errorPreviewPageHandler(ModuleEvent $moduleEvent): void
@@ -64,9 +62,6 @@ final class Module implements ConfigProviderInterface, DependencyIndicatorInterf
         $configMerger->setMergedConfig($configuration);
     }
 
-    /**
-     * @return mixed[]
-     */
     public function getConfig(): array
     {
         return include __DIR__ . '/../config/module.config.php';

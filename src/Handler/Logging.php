@@ -6,6 +6,7 @@ namespace ErrorHeroModule\Handler;
 
 use ErrorException;
 use ErrorHeroModule\Handler\Formatter\Json;
+use ErrorHeroModule\Handler\Writer\DoctrineWriter;
 use ErrorHeroModule\Handler\Writer\Mail;
 use ErrorHeroModule\HeroConstant;
 use Laminas\Diactoros\Stream;
@@ -14,7 +15,6 @@ use Laminas\Http\PhpEnvironment\RemoteAddress;
 use Laminas\Http\PhpEnvironment\Request as HttpRequest;
 use Laminas\Log\Logger;
 use Laminas\Log\PsrLoggerAdapter;
-use Laminas\Log\Writer\Db;
 use Laminas\Mail\Message;
 use Laminas\Mail\Transport\TransportInterface;
 use Laminas\Stdlib\ParametersInterface;
@@ -34,8 +34,6 @@ use const PHP_EOL;
 
 final class Logging
 {
-    private array $configLoggingSettings = [];
-
     private array $emailReceivers = [];
 
     private readonly string $emailSender;
@@ -61,36 +59,16 @@ final class Logging
     /** @var string */
     private const SERVER_URL = 'server_url';
 
-    /**
-     * PSR Logging uses a different set of log levels to Laminas\Log, instead of sending integers we have to use
-     * the PSR log levels. This map is used to convert between the two.
-     *
-     * @var array
-     */
-    protected array $psrPriorityMap
-        = [
-            LogLevel::EMERGENCY => Logger::EMERG,
-            LogLevel::ALERT     => Logger::ALERT,
-            LogLevel::CRITICAL  => Logger::CRIT,
-            LogLevel::ERROR     => Logger::ERR,
-            LogLevel::WARNING   => Logger::WARN,
-            LogLevel::NOTICE    => Logger::NOTICE,
-            LogLevel::INFO      => Logger::INFO,
-            LogLevel::DEBUG     => Logger::DEBUG,
-        ];
-
     public function __construct(
         private readonly PsrLoggerAdapter    $psrLoggerAdapter,
         array                                $errorHeroModuleLocalConfig,
-        private readonly array               $logWritersConfig,
         private readonly ?Message            $message = null,
         private readonly ?TransportInterface $mailMessageTransport = null,
         private readonly bool                $includeFilesToAttachments = true
     )
     {
-        $this->configLoggingSettings = $errorHeroModuleLocalConfig['logging-settings'];
-        $this->emailReceivers        = $errorHeroModuleLocalConfig['email-notification-settings']['email-to-send'];
-        $this->emailSender           = $errorHeroModuleLocalConfig['email-notification-settings']['email-from'];
+        $this->emailReceivers = $errorHeroModuleLocalConfig['email-notification-settings']['email-to-send'];
+        $this->emailSender    = $errorHeroModuleLocalConfig['email-notification-settings']['email-from'];
     }
 
     /**
@@ -154,18 +132,15 @@ final class Logging
      */
     private function collectErrorExceptionData(Throwable $throwable): array
     {
-        $flippedPsrPriorityMap = array_flip($this->psrPriorityMap);
-
         if (
-            $throwable instanceof ErrorException
-            && isset($flippedPsrPriorityMap[$severity = $throwable->getSeverity()])
+            $throwable instanceof ErrorException && null !== Logging::getPsrPrioryFromSeverity($throwable->getSeverity())
         ) {
             //We need to use the new PSR7 severity level, these can be fetched
             //From the psrPriorityMap in this class
 
 
-            $priority  = $flippedPsrPriorityMap[$severity];
-            $errorType = HeroConstant::ERROR_TYPE[$severity];
+            $priority  = Logging::getPsrPrioryFromSeverity($throwable->getSeverity());
+            $errorType = HeroConstant::ERROR_TYPE[$throwable->getSeverity()];
         } else {
             $priority  = LogLevel::ERROR;
             $errorType = $throwable::class;
@@ -184,6 +159,26 @@ final class Logging
             self::TRACE         => $traceAsString,
             self::ERROR_MESSAGE => $errorMessage,
         ];
+    }
+
+    public static function getPsrPrioryFromSeverity(int $severity, bool $fromLegacy = true): string
+    {
+        if ($fromLegacy) {
+            $severity = Logger::$errorPriorityMap[$severity];
+        }
+
+        //Flip the array above and convert into a match statement
+        return match ($severity) {
+            Logger::EMERG  => LogLevel::EMERGENCY,
+            Logger::ALERT  => LogLevel::ALERT,
+            Logger::CRIT   => LogLevel::CRITICAL,
+            Logger::ERR    => LogLevel::ERROR,
+            Logger::WARN   => LogLevel::WARNING,
+            Logger::NOTICE => LogLevel::NOTICE,
+            Logger::INFO   => LogLevel::INFO,
+            Logger::DEBUG  => LogLevel::DEBUG,
+            default        => throw new \InvalidArgumentException('Invalid priority level: ' . $legacyPriority),
+        };
     }
 
     /**
@@ -241,23 +236,16 @@ final class Logging
 
         $writers = $logger->getWriters()->toArray();
         foreach ($writers as $writer) {
-            if ($writer instanceof Db) {
+            if ($writer instanceof DoctrineWriter) {
+
                 try {
-                    $handlerWriterDb = new Writer\Checker\Db(
-                        $writer,
-                        $this->configLoggingSettings,
-                        $this->logWritersConfig
-                    );
-                    if ($handlerWriterDb->isExists($errorFile, $errorLine, $errorMessage, $url, $errorType)) {
+                    if ($writer->isExists($errorFile, $errorLine, $errorMessage, $url, $errorType)) {
                         return true;
                     }
-
-                    break;
-                } catch (RuntimeException $runtimeException) {
-                    // use \Laminas\Db\Adapter\Exception\RuntimeException but do here
-                    // to avoid too much deep trace from Laminas\Db classes
-                    throw new ${!${''} = $runtimeException::class}($runtimeException->getMessage());
+                } catch (\Exception $e) {
+                    throw new ${!${''} = $e::class}($e->getMessage());
                 }
+
             }
         }
 
@@ -315,6 +303,7 @@ final class Logging
             }
 
             unset($extra[self::SERVER_URL]);
+
             $this->psrLoggerAdapter->log(
                 $collectedExceptionData[self::PRIORITY],
                 $collectedExceptionData[self::ERROR_MESSAGE],

@@ -9,7 +9,7 @@ use Aura\Di\Container as AuraContainer;
 use Doctrine\ORM\EntityManager;
 use ErrorHeroModule\Handler\Logging;
 use ErrorHeroModule\Transformer\AuraService;
-use ErrorHeroModule\Transformer\Doctrine;
+use ErrorHeroModule\Transformer\DoctrineTransformer;
 use ErrorHeroModule\Transformer\PimpleService;
 use ErrorHeroModule\Transformer\SymfonyService;
 use ErrorHeroModule\Transformer\TransformerInterface;
@@ -79,7 +79,7 @@ final class MezzioFactory
 
         if ($container->has(EntityManager::class) && !isset($configuration['db'])) {
             return $this->createMiddlewareInstance(
-                Doctrine::transform($container, $configuration),
+                DoctrineTransformer::transform($container, $configuration),
                 $configuration
             );
         }

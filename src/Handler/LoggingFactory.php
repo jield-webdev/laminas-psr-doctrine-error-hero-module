@@ -25,7 +25,6 @@ final class LoggingFactory
         $errorHeroModuleLogger = $container->get('ErrorHeroModuleLogger');
 
         $errorHeroModuleLocalConfig = $config['error-hero-module'];
-        $logWritersConfig           = $config['log']['ErrorHeroModuleLogger']['writers'];
 
         $mailConfig           = $errorHeroModuleLocalConfig['email-notification-settings'];
         $mailMessageService   = null;
@@ -54,7 +53,6 @@ final class LoggingFactory
         return new Logging(
             $errorHeroModuleLogger,
             $errorHeroModuleLocalConfig,
-            $logWritersConfig,
             $mailMessageService,
             $mailMessageTransport,
             $includeFilesToAttachments
