@@ -3,11 +3,10 @@ includes:
 	- phpstan-baseline.neon
 
 parameters:
+	level: 2
 	excludePaths:
 		- src/Command/Preview/ErrorPreviewConsoleCommand.php
 		- src/Controller/ErrorPreviewController.php
 		- src/Middleware/Routed/Preview/ErrorPreviewAction.php
-	checkMissingIterableValueType: false
 	reportUnmatchedIgnoredErrors: false
 	treatPhpDocTypesAsCertain: false
-	checkGenericClassInNonGenericObjectType: false

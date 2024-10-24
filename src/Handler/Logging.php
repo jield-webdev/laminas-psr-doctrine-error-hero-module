@@ -236,7 +236,10 @@ final class Logging
         string $errorType
     ): bool
     {
-        $writers = $this->psrLoggerAdapter->getLogger()->getWriters()->toArray();
+        /** @var Logger $logger */
+        $logger = $this->psrLoggerAdapter->getLogger();
+
+        $writers = $logger->getWriters()->toArray();
         foreach ($writers as $writer) {
             if ($writer instanceof Db) {
                 try {
