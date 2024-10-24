@@ -1,120 +1,120 @@
 {
-    "name": "samsonasik/error-hero-module",
-    "type": "library",
-    "description": "A Hero for your Laminas and Mezzio application to trap php errors & exceptions",
-    "keywords": [
-        "laminas",
-        "error",
-        "mezzio",
-        "hero",
-        "log",
-        "logger",
-        "logging",
-        "mail",
-        "db",
-        "doctrine",
-        "handler",
-        "psr3",
-        "psr7",
-        "psr11",
-        "psr15",
-        "laminas-view",
-        "twig",
-        "plates",
-        "symfony",
-        "aura",
-        "pimple"
-    ],
-    "homepage": "https://github.com/samsonasik/ErrorHeroModule",
-    "license": "MIT",
-    "authors": [
-        {
-            "name": "Abdul Malik Ikhsan",
-            "email": "samsonasik@gmail.com",
-            "homepage": "http://samsonasik.wordpress.com",
-            "role": "Developer"
-        }
-    ],
-    "require": {
-        "php": "^8.1",
-        "laminas/laminas-db": "^2.16.2",
-        "laminas/laminas-diactoros": "^2.22",
-        "laminas/laminas-log": "^2.16",
-        "laminas/laminas-mail": "^2.21",
-        "laminas/laminas-psr7bridge": "^1.8",
-        "laminas/laminas-uri": "^2.10",
-        "psr/container": "^1.1.2 || 2.0",
-        "samsonasik/array-lookup": "^1.0",
-        "seld/jsonlint": "^1.9",
-        "webmozart/assert": "^1.11"
-    },
-    "conflict": {
-        "doctrine/dbal": "<3.0",
-        "doctrine/doctrine-orm-module": "<4.1",
-        "laminas/laminas-mvc": "<3.2 >=4.0",
-        "laminas/laminas-servicemanager": "<3.10",
-        "mezzio/mezzio": "<3.3 >=4.0",
-        "laminas/laminas-mvc-console": "*"
-    },
-    "require-dev": {
-        "aura/di": "^3.4 || ^4.2.1",
-        "doctrine/dbal": "^3.5.1",
-        "doctrine/doctrine-orm-module": "^4.2.1 || ^5.0",
-        "kahlan/kahlan": "^5.2.2",
-        "laminas/laminas-cli": "^1.7",
-        "laminas/laminas-coding-standard": "^2.4",
-        "laminas/laminas-form": "^2.16 || ^3.8",
-        "laminas/laminas-mvc": "^3.6",
-        "laminas/laminas-servicemanager": "^3.20",
-        "mezzio/mezzio": "^3.14",
-        "mezzio/mezzio-laminasviewrenderer": "^2.10",
-        "php-coveralls/php-coveralls": "^2.5.3",
-        "phpstan/phpstan": "^1.9.3",
-        "phpstan/phpstan-webmozart-assert": "^1.2.2",
-        "pimple/pimple": "^3.5",
-        "rector/rector": "dev-main",
-        "symfony/dependency-injection": "^5.4.16"
-    },
-    "suggest": {
-        "mezzio/mezzio-laminasviewrenderer": "^2.0 to be able to use laminas-view template engine in mezzio ^3.0",
-        "mezzio/mezzio-platesrenderer": "^2.0 to be able to use plates template engine in mezzio ^3.0",
-        "mezzio/mezzio-twigrenderer": "^2.0 to be able to use twig template engine in mezzio ^3.0"
-    },
-    "config": {
-        "bin-dir": "bin",
-        "sort-packages": true,
-        "allow-plugins": {
-            "dealerdirect/phpcodesniffer-composer-installer": true,
-            "composer/package-versions-deprecated": true,
-            "ocramius/package-versions": true
-        }
-    },
-    "extra": {
-        "laminas": {
-            "module": "ErrorHeroModule"
-        }
-    },
-    "autoload": {
-        "psr-4": {
-            "ErrorHeroModule\\": "src/"
-        },
-        "files": [
-            "src/HeroFunction.php"
-        ]
-    },
-    "autoload-dev": {
-        "psr-4": {
-            "ErrorHeroModule\\Spec\\": "spec/"
-        },
-        "files": [
-            "vendor/doctrine/dbal/src/Driver/PDO/MySQL/Driver.php"
-        ]
-    },
-    "minimum-stability": "dev",
-    "prefer-stable": true,
-    "scripts": {
-        "cs-check": "phpcs",
-        "cs-fix": "phpcbf",
-        "phpstan": "phpstan analyse src/ --level=max -c phpstan.neon"
+  "name": "samsonasik/error-hero-module",
+  "type": "library",
+  "description": "A Hero for your Laminas and Mezzio application to trap php errors & exceptions",
+  "keywords": [
+    "laminas",
+    "error",
+    "mezzio",
+    "hero",
+    "log",
+    "logger",
+    "logging",
+    "mail",
+    "db",
+    "doctrine",
+    "handler",
+    "psr3",
+    "psr7",
+    "psr11",
+    "psr15",
+    "laminas-view",
+    "twig",
+    "plates",
+    "symfony",
+    "aura",
+    "pimple"
+  ],
+  "homepage": "https://github.com/samsonasik/ErrorHeroModule",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Abdul Malik Ikhsan",
+      "email": "samsonasik@gmail.com",
+      "homepage": "http://samsonasik.wordpress.com",
+      "role": "Developer"
     }
+  ],
+  "require": {
+    "php": "^8.1",
+    "laminas/laminas-db": "^2.16.2",
+    "laminas/laminas-diactoros": "^2.22",
+    "laminas/laminas-log": "^2.16",
+    "laminas/laminas-mail": "^2.21",
+    "laminas/laminas-psr7bridge": "^1.8",
+    "laminas/laminas-uri": "^2.10",
+    "psr/container": "^1.1.2 || 2.0",
+    "samsonasik/array-lookup": "^1.0",
+    "seld/jsonlint": "^1.9",
+    "webmozart/assert": "^1.11"
+  },
+  "conflict": {
+    "doctrine/dbal": "<3.0",
+    "doctrine/doctrine-orm-module": "<4.1",
+    "laminas/laminas-mvc": "<3.2|>=4.0",
+    "laminas/laminas-servicemanager": "<3.10",
+    "mezzio/mezzio": "<3.3|>=4.0",
+    "laminas/laminas-mvc-console": "*"
+  },
+  "require-dev": {
+    "aura/di": "^3.4 || ^4.2.1",
+    "doctrine/dbal": "^3.5.1",
+    "doctrine/doctrine-orm-module": "^4.2.1 || ^5.0",
+    "kahlan/kahlan": "^5.2.2",
+    "laminas/laminas-cli": "^1.7",
+    "laminas/laminas-coding-standard": "^2.4",
+    "laminas/laminas-form": "^2.16 || ^3.8",
+    "laminas/laminas-mvc": "^3.6",
+    "laminas/laminas-servicemanager": "^3.20",
+    "mezzio/mezzio": "^3.14",
+    "mezzio/mezzio-laminasviewrenderer": "^2.10",
+    "php-coveralls/php-coveralls": "^2.5.3",
+    "phpstan/phpstan": "^1.9.3",
+    "phpstan/phpstan-webmozart-assert": "^1.2.2",
+    "pimple/pimple": "^3.5",
+    "rector/rector": "dev-main",
+    "symfony/dependency-injection": "^5.4.16"
+  },
+  "suggest": {
+    "mezzio/mezzio-laminasviewrenderer": "^2.0 to be able to use laminas-view template engine in mezzio ^3.0",
+    "mezzio/mezzio-platesrenderer": "^2.0 to be able to use plates template engine in mezzio ^3.0",
+    "mezzio/mezzio-twigrenderer": "^2.0 to be able to use twig template engine in mezzio ^3.0"
+  },
+  "config": {
+    "bin-dir": "bin",
+    "sort-packages": true,
+    "allow-plugins": {
+      "dealerdirect/phpcodesniffer-composer-installer": true,
+      "composer/package-versions-deprecated": true,
+      "ocramius/package-versions": true
+    }
+  },
+  "extra": {
+    "laminas": {
+      "module": "ErrorHeroModule"
+    }
+  },
+  "autoload": {
+    "psr-4": {
+      "ErrorHeroModule\\": "src/"
+    },
+    "files": [
+      "src/HeroFunction.php"
+    ]
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "ErrorHeroModule\\Spec\\": "spec/"
+    },
+    "files": [
+      "vendor/doctrine/dbal/src/Driver/PDO/MySQL/Driver.php"
+    ]
+  },
+  "minimum-stability": "dev",
+  "prefer-stable": true,
+  "scripts": {
+    "cs-check": "phpcs",
+    "cs-fix": "phpcbf",
+    "phpstan": "phpstan analyse src/ --level=max -c phpstan.neon"
+  }
 }
