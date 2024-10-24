@@ -9,7 +9,6 @@ use Laminas\Mail\Message;
 use Laminas\Mail\Transport\TransportInterface;
 use Psr\Container\ContainerInterface;
 use RuntimeException;
-
 use function sprintf;
 
 final class LoggingFactory
@@ -26,7 +25,7 @@ final class LoggingFactory
         $errorHeroModuleLogger = $container->get('ErrorHeroModuleLogger');
 
         $errorHeroModuleLocalConfig = $config['error-hero-module'];
-        $logWritersConfig           = $config['log']['ErrorHeroModuleLogger']['writers'];
+        $logWritersConfig           = $config['psr_log']['ErrorHeroModuleLogger']['writers'];
 
         $mailConfig           = $errorHeroModuleLocalConfig['email-notification-settings'];
         $mailMessageService   = null;
@@ -34,7 +33,7 @@ final class LoggingFactory
 
         if ($mailConfig['enable'] === true) {
             $mailMessageService = $container->get($mailConfig['mail-message']);
-            if (! $mailMessageService instanceof Message) {
+            if (!$mailMessageService instanceof Message) {
                 throw new RuntimeException(sprintf(
                     'You are enabling email log writer, your "mail-message" config must be instanceof %s',
                     Message::class
@@ -42,7 +41,7 @@ final class LoggingFactory
             }
 
             $mailMessageTransport = $container->get($mailConfig['mail-transport']);
-            if (! $mailMessageTransport instanceof TransportInterface) {
+            if (!$mailMessageTransport instanceof TransportInterface) {
                 throw new RuntimeException(sprintf(
                     'You are enabling email log writer, your "mail-transport" config must implements %s',
                     TransportInterface::class

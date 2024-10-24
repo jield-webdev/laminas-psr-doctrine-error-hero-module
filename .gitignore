@@ -1,8 +1,10 @@
 vendor
 composer.lock
+composer.phar
 coverage/
 coverage.json
 bin
 .php_cs.cache
 .vscode/
+.idea/
 build/logs/*

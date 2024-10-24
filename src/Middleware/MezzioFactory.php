@@ -12,6 +12,7 @@ use ErrorHeroModule\Transformer\AuraService;
 use ErrorHeroModule\Transformer\Doctrine;
 use ErrorHeroModule\Transformer\PimpleService;
 use ErrorHeroModule\Transformer\SymfonyService;
+use ErrorHeroModule\Transformer\TransformerInterface;
 use Laminas\ServiceManager\ServiceManager;
 use Mezzio\Template\TemplateRendererInterface;
 use Pimple\Psr11\Container as Psr11PimpleContainer;
@@ -19,7 +20,6 @@ use Psr\Container\ContainerInterface;
 use RuntimeException;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Webmozart\Assert\Assert;
-
 use function array_key_exists;
 use function is_array;
 use function sprintf;
@@ -27,11 +27,12 @@ use function sprintf;
 final class MezzioFactory
 {
     /** @var array<string, string> */
-    private const CONTAINERS_TRANSFORM = [
-        ContainerBuilder::class     => SymfonyService::class,
-        AuraContainer::class        => AuraService::class,
-        Psr11PimpleContainer::class => PimpleService::class,
-    ];
+    private const CONTAINERS_TRANSFORM
+        = [
+            ContainerBuilder::class     => SymfonyService::class,
+            AuraContainer::class        => AuraService::class,
+            Psr11PimpleContainer::class => PimpleService::class,
+        ];
 
     private function createMiddlewareInstance(ContainerInterface $container, array $configuration): Mezzio
     {
@@ -54,12 +55,12 @@ final class MezzioFactory
      */
     private function verifyConfig(iterable $configuration, string $containerClass): array
     {
-        if (! is_array($configuration)) {
+        if (!is_array($configuration)) {
             Assert::isInstanceOf($configuration, ArrayObject::class);
             $configuration = $configuration->getArrayCopy();
         }
 
-        if (! isset($configuration['db'])) {
+        if (!isset($configuration['db'])) {
             throw new RuntimeException(
                 sprintf(
                     'db config is required for build "ErrorHeroModuleLogger" service by %s Container',
@@ -76,7 +77,7 @@ final class MezzioFactory
         /** @var array<string, mixed> $configuration */
         $configuration = $container->get('config');
 
-        if ($container->has(EntityManager::class) && ! isset($configuration['db'])) {
+        if ($container->has(EntityManager::class) && !isset($configuration['db'])) {
             return $this->createMiddlewareInstance(
                 Doctrine::transform($container, $configuration),
                 $configuration
@@ -90,7 +91,10 @@ final class MezzioFactory
         $containerClass = $container::class;
         if (array_key_exists($containerClass, self::CONTAINERS_TRANSFORM)) {
             $configuration = $this->verifyConfig($configuration, $containerClass);
-            $transformer   = self::CONTAINERS_TRANSFORM[$containerClass];
+            /** @var TransformerInterface $transformer */
+            $transformer = self::CONTAINERS_TRANSFORM[$containerClass];
+
+            \assert($transformer instanceof TransformerInterface);
 
             return $this->createMiddlewareInstance(
                 $transformer::transform($container, $configuration),

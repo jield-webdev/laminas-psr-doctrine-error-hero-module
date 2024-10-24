@@ -13,22 +13,22 @@ use Laminas\Http\Header\Cookie;
 use Laminas\Http\PhpEnvironment\RemoteAddress;
 use Laminas\Http\PhpEnvironment\Request as HttpRequest;
 use Laminas\Log\Logger;
+use Laminas\Log\PsrLoggerAdapter;
 use Laminas\Log\Writer\Db;
 use Laminas\Mail\Message;
 use Laminas\Mail\Transport\TransportInterface;
 use Laminas\Stdlib\ParametersInterface;
 use Laminas\Stdlib\RequestInterface;
+use Psr\Log\LogLevel;
 use RuntimeException;
 use Throwable;
 use Webmozart\Assert\Assert;
-
 use function basename;
 use function get_current_user;
 use function getcwd;
 use function implode;
 use function php_uname;
 use function str_replace;
-
 use const PHP_BINARY;
 use const PHP_EOL;
 
@@ -61,14 +61,33 @@ final class Logging
     /** @var string */
     private const SERVER_URL = 'server_url';
 
+    /**
+     * PSR Logging uses a different set of log levels to Laminas\Log, instead of sending integers we have to use
+     * the PSR log levels. This map is used to convert between the two.
+     *
+     * @var array
+     */
+    protected array $psrPriorityMap
+        = [
+            LogLevel::EMERGENCY => Logger::EMERG,
+            LogLevel::ALERT     => Logger::ALERT,
+            LogLevel::CRITICAL  => Logger::CRIT,
+            LogLevel::ERROR     => Logger::ERR,
+            LogLevel::WARNING   => Logger::WARN,
+            LogLevel::NOTICE    => Logger::NOTICE,
+            LogLevel::INFO      => Logger::INFO,
+            LogLevel::DEBUG     => Logger::DEBUG,
+        ];
+
     public function __construct(
-        private readonly Logger $logger,
-        array $errorHeroModuleLocalConfig,
-        private readonly array $logWritersConfig,
-        private readonly ?Message $message = null,
+        private readonly PsrLoggerAdapter    $psrLoggerAdapter,
+        array                                $errorHeroModuleLocalConfig,
+        private readonly array               $logWritersConfig,
+        private readonly ?Message            $message = null,
         private readonly ?TransportInterface $mailMessageTransport = null,
-        private readonly bool $includeFilesToAttachments = true
-    ) {
+        private readonly bool                $includeFilesToAttachments = true
+    )
+    {
         $this->configLoggingSettings = $errorHeroModuleLocalConfig['logging-settings'];
         $this->emailReceivers        = $errorHeroModuleLocalConfig['email-notification-settings']['email-to-send'];
         $this->emailSender           = $errorHeroModuleLocalConfig['email-notification-settings']['email-from'];
@@ -79,7 +98,7 @@ final class Logging
      */
     private function getRequestData(?RequestInterface $request): array
     {
-        if (! $request instanceof HttpRequest) {
+        if (!$request instanceof HttpRequest) {
             return [];
         }
 
@@ -89,13 +108,13 @@ final class Logging
         $query = $request->getQuery();
         /** @var ParametersInterface $post */
         $post = $request->getPost();
-        /** @var ParametersInterface $files*/
+        /** @var ParametersInterface $files */
         $files = $request->getFiles();
 
         $content = $request->getContent();
 
         if ($content instanceof Stream) {
-            $content = (string) $content;
+            $content = (string)$content;
         }
 
         $queryData     = $query->toArray();
@@ -135,14 +154,20 @@ final class Logging
      */
     private function collectErrorExceptionData(Throwable $throwable): array
     {
+        $flippedPsrPriorityMap = array_flip($this->psrPriorityMap);
+
         if (
             $throwable instanceof ErrorException
-            && isset(Logger::$errorPriorityMap[$severity = $throwable->getSeverity()])
+            && isset($flippedPsrPriorityMap[$severity = $throwable->getSeverity()])
         ) {
-            $priority  = Logger::$errorPriorityMap[$severity];
+            //We need to use the new PSR7 severity level, these can be fetched
+            //From the psrPriorityMap in this class
+
+
+            $priority  = $flippedPsrPriorityMap[$severity];
             $errorType = HeroConstant::ERROR_TYPE[$severity];
         } else {
-            $priority  = Logger::ERR;
+            $priority  = LogLevel::ERROR;
             $errorType = $throwable::class;
         }
 
@@ -174,15 +199,15 @@ final class Logging
      */
     private function collectErrorExceptionExtraData(array $collectedExceptionData, ?RequestInterface $request): array
     {
-        if (! $request instanceof HttpRequest) {
+        if (!$request instanceof HttpRequest) {
             $argv      = $_SERVER['argv'] ?? [];
             $serverUrl = php_uname('n');
-            $url       = $serverUrl . ':' . basename((string) getcwd())
+            $url       = $serverUrl . ':' . basename((string)getcwd())
                 . ' ' . get_current_user()
                 . '$ ' . PHP_BINARY;
 
             $params = implode(' ', $argv);
-            $url   .= $params;
+            $url    .= $params;
         } else {
             $http      = $request->getUri();
             $serverUrl = $http->getScheme() . '://' . $http->getHost();
@@ -205,12 +230,13 @@ final class Logging
      */
     private function isExists(
         string $errorFile,
-        int $errorLine,
+        int    $errorLine,
         string $errorMessage,
         string $url,
         string $errorType
-    ): bool {
-        $writers = $this->logger->getWriters()->toArray();
+    ): bool
+    {
+        $writers = $this->psrLoggerAdapter->getLogger()->getWriters()->toArray();
         foreach ($writers as $writer) {
             if ($writer instanceof Db) {
                 try {
@@ -227,7 +253,7 @@ final class Logging
                 } catch (RuntimeException $runtimeException) {
                     // use \Laminas\Db\Adapter\Exception\RuntimeException but do here
                     // to avoid too much deep trace from Laminas\Db classes
-                    throw new ${! ${''} = $runtimeException::class}($runtimeException->getMessage());
+                    throw new ${!${''} = $runtimeException::class}($runtimeException->getMessage());
                 }
             }
         }
@@ -237,7 +263,7 @@ final class Logging
 
     private function sendMail(int $priority, string $errorMessage, array $extra, string $subject): void
     {
-        if (! $this->message instanceof Message || ! $this->mailMessageTransport instanceof TransportInterface) {
+        if (!$this->message instanceof Message || !$this->mailMessageTransport instanceof TransportInterface) {
             return;
         }
 
@@ -259,7 +285,7 @@ final class Logging
             $writer->setFormatter(new Json());
 
             (new Logger())->addWriter($writer)
-                          ->log($priority, $errorMessage, $extra);
+                ->log($priority, $errorMessage, $extra);
         }
     }
 
@@ -286,7 +312,7 @@ final class Logging
             }
 
             unset($extra[self::SERVER_URL]);
-            $this->logger->log(
+            $this->psrLoggerAdapter->log(
                 $collectedExceptionData[self::PRIORITY],
                 $collectedExceptionData[self::ERROR_MESSAGE],
                 $extra

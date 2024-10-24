@@ -16,7 +16,6 @@ use Laminas\Stdlib\RequestInterface;
 use Laminas\View\Renderer\PhpRenderer;
 use Throwable;
 use Webmozart\Assert\Assert;
-
 use function ErrorHeroModule\detectMessageContentType;
 use function ErrorHeroModule\isExcludedException;
 
@@ -33,10 +32,11 @@ final class Mvc extends AbstractListenerAggregate
     private const MESSAGE = 'message';
 
     public function __construct(
-        private readonly array $errorHeroModuleConfig,
-        private readonly Logging $logging,
+        private readonly array       $errorHeroModuleConfig,
+        private readonly Logging     $logging,
         private readonly PhpRenderer $phpRenderer
-    ) {
+    )
+    {
     }
 
     /**
@@ -44,7 +44,7 @@ final class Mvc extends AbstractListenerAggregate
      */
     public function attach(EventManagerInterface $eventManager, $priority = 1): void
     {
-        if (! $this->errorHeroModuleConfig['enable']) {
+        if (!$this->errorHeroModuleConfig['enable']) {
             return;
         }
 
@@ -59,7 +59,7 @@ final class Mvc extends AbstractListenerAggregate
     public function exceptionError(MvcEvent $mvcEvent): void
     {
         $exception = $mvcEvent->getParam('exception');
-        if (! $exception instanceof Throwable) {
+        if (!$exception instanceof Throwable) {
             return;
         }
 

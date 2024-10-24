@@ -5,28 +5,26 @@ namespace ErrorHeroModule;
 use ErrorHeroModule\Command\BaseLoggingCommandInitializer;
 use ErrorHeroModule\Command\Preview\ErrorPreviewConsoleCommand;
 use ErrorHeroModule\Controller\ErrorPreviewController;
-use Laminas\Log\LoggerAbstractServiceFactory;
-use ErrorHeroModule\Listener\Mvc;
-use ErrorHeroModule\Listener\MvcFactory;
 use ErrorHeroModule\Handler\Logging;
 use ErrorHeroModule\Handler\LoggingFactory;
+use ErrorHeroModule\Listener\Mvc;
+use ErrorHeroModule\Listener\MvcFactory;
+use Laminas\Log\PsrLoggerAbstractAdapterFactory;
 use Laminas\ServiceManager\Factory\InvokableFactory;
 
 return [
-
-    'controllers' => [
+    'controllers'     => [
         'factories' => [
-            ErrorPreviewController::class           => InvokableFactory::class,
+            ErrorPreviewController::class => InvokableFactory::class,
         ],
     ],
-
-    'router' => [
+    'router'          => [
         'routes' => [
 
             'error-preview' => [
-                'type' => 'Segment',
+                'type'    => 'Segment',
                 'options' => [
-                    'route' => '/error-preview[/][:action]',
+                    'route'    => '/error-preview[/][:action]',
                     'defaults' => [
                         'controller' => ErrorPreviewController::class,
                         'action'     => 'exception',
@@ -36,22 +34,20 @@ return [
 
         ],
     ],
-
     'service_manager' => [
         'abstract_factories' => [
-            LoggerAbstractServiceFactory::class,
+            PsrLoggerAbstractAdapterFactory::class,
         ],
-        'factories' => [
-            Mvc::class    => MvcFactory::class,
-            Logging::class => LoggingFactory::class,
+        'factories'          => [
+            Mvc::class                        => MvcFactory::class,
+            Logging::class                    => LoggingFactory::class,
             ErrorPreviewConsoleCommand::class => InvokableFactory::class,
         ],
-        'initializers' => [
+        'initializers'       => [
             BaseLoggingCommandInitializer::class,
         ],
     ],
-
-    'listeners' => [
+    'listeners'       => [
         Mvc::class,
     ],
 
@@ -63,8 +59,8 @@ return [
 
     'view_manager' => [
         'template_map' => [
-           'error-hero-module/error-default' => __DIR__.'/../view/error-hero-module/error-default.phtml',
-       ],
+            'error-hero-module/error-default' => __DIR__ . '/../view/error-hero-module/error-default.phtml',
+        ],
     ],
 
 ];

@@ -7,57 +7,74 @@ ErrorHeroModule
 [![PHPStan](https://img.shields.io/badge/style-level%20max-brightgreen.svg?style=flat-square&label=phpstan)](https://github.com/phpstan/phpstan)
 [![Downloads](https://poser.pugx.org/samsonasik/error-hero-module/downloads)](https://packagist.org/packages/samsonasik/error-hero-module)
 
+> This is a fork of [ErrorHeroModule](https://github.com/samsonasik/ErrorHeroModule)
+> by [samsonasik](https://github.com/samsonasik) that has been updated to support PSR loggers and Doctrine
+
 > This is README for version ^5.0 which only support Laminas Mvc version 3 and Mezzio version 3 with php ^8.1.
 
-> For version ^4.0, you can read at [version 4 readme](https://github.com/samsonasik/ErrorHeroModule/tree/4.x.x) which only support Laminas Mvc version 3 and Mezzio version 3 with php ^8.0.
+> For version ^4.0, you can read at [version 4 readme](https://github.com/samsonasik/ErrorHeroModule/tree/4.x.x) which
+> only support Laminas Mvc version 3 and Mezzio version 3 with php ^8.0.
 
 Introduction
 ------------
 
-ErrorHeroModule is a module for Error Logging (DB and Mail) your Laminas Mvc 3 Application, and Mezzio 3 for Exceptions in 'dispatch.error' or 'render.error' or during request and response, and [PHP E_* Error](http://www.php.net/manual/en/errorfunc.constants.php).
+ErrorHeroModule is a module for Error Logging (DB and Mail) your Laminas Mvc 3 Application, and Mezzio 3 for Exceptions
+in 'dispatch.error' or 'render.error' or during request and response,
+and [PHP E_* Error](http://www.php.net/manual/en/errorfunc.constants.php).
 
 Features
 --------
 
 - [x] Save to DB with Db Writer Adapter.
 - [x] Log Exception (dispatch.error and render.error) and PHP Errors in all events process.
-- [x] Support excludes [PHP E_* Error](http://www.php.net/manual/en/errorfunc.constants.php) (eg: exclude E_USER_DEPRECATED or specific E_USER_DEPRECATED with specific message) in config settings.
-- [x] Support excludes [PHP Exception](http://php.net/manual/en/spl.exceptions.php) (eg: Exception class or classes that extends it or specific exception class with specific message) in config settings.
+- [x] Support excludes [PHP E_* Error](http://www.php.net/manual/en/errorfunc.constants.php) (eg: exclude
+  E_USER_DEPRECATED or specific E_USER_DEPRECATED with specific message) in config settings.
+- [x] Support excludes [PHP Exception](http://php.net/manual/en/spl.exceptions.php) (eg: Exception class or classes that
+  extends it or specific exception class with specific message) in config settings.
 - [x] Handle only once log error for same error per configured time range.
 - [x] Set default page (web access) or default message (console access) for error if configured 'display_errors' = 0.
 - [x] Set default content when request is XMLHttpRequest via 'ajax' configuration.
-- [x] Set default content when there is [no template service](https://github.com/mezzio/mezzio-template/blob/9b6c2e06f8c1d7e43750f72b64cc749552f2bdbe/src/TemplateRendererInterface.php) via 'no_template' configuration (Mezzio 3).
-- [x] Provide request information ( http method, raw data, body data, query data, files data, cookie data, and ip address).
+- [x] Set default content when there
+  is [no template service](https://github.com/mezzio/mezzio-template/blob/9b6c2e06f8c1d7e43750f72b64cc749552f2bdbe/src/TemplateRendererInterface.php)
+  via 'no_template' configuration (Mezzio 3).
+- [x] Provide request information ( http method, raw data, body data, query data, files data, cookie data, and ip
+  address).
 - [x] Send Mail
-  - [x] many receivers to listed configured email
-  - [x] with include $_FILES into attachments on upload error (configurable to be included or not).
+    - [x] many receivers to listed configured email
+    - [x] with include $_FILES into attachments on upload error (configurable to be included or not).
 
 Installation
 ------------
 
 **1. Import the following SQL for Mysql**
+
 ```sql
 DROP TABLE IF EXISTS `log`;
 
-CREATE TABLE `log` (
-  `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT,
-  `date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  `type` int(11) NOT NULL,
-  `event` text NOT NULL,
-  `url` varchar(2000) NOT NULL,
-  `file` varchar(2000) NOT NULL,
-  `line` int(11) NOT NULL,
-  `error_type` varchar(255) NOT NULL,
-  `trace` text NULL,
-  `request_data` text NULL,
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=latin1;
+CREATE TABLE `log`
+(
+    `id`           bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT,
+    `date`         timestamp           NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    `type`         int(11)             NOT NULL,
+    `event`        text                NOT NULL,
+    `url`          varchar(2000)       NOT NULL,
+    `file`         varchar(2000)       NOT NULL,
+    `line`         int(11)             NOT NULL,
+    `error_type`   varchar(255)        NOT NULL,
+    `trace`        text                NULL,
+    `request_data` text                NULL,
+    PRIMARY KEY (`id`)
+) ENGINE = InnoDB
+  AUTO_INCREMENT = 1
+  DEFAULT CHARSET = latin1;
 ```
+
 > If you use other RDBMS, you may follow the `log` table structure above.
 
 **2. Setup your Laminas\Db\Adapter\AdapterInterface service or your Doctrine\ORM\EntityManager service config**
 
-You can use 'db' (with _Laminas\Db_) config or 'doctrine' (with _DoctrineORMModule_) config that will be transformed to be usable with `Laminas\Log\Writer\Db`.
+You can use 'db' (with _Laminas\Db_) config or 'doctrine' (with _DoctrineORMModule_) config that will be transformed to
+be usable with `Laminas\Log\Writer\Db`.
 
 ```php
 <?php
@@ -112,11 +129,12 @@ composer require samsonasik/error-hero-module
 
 **4. Copy config**
 
-***a. For [Laminas Mvc](https://docs.laminas.dev/tutorials/getting-started/overview/) application, copy `error-hero-module.local.php.dist` config to your local's autoload and configure it***
+***a. For [Laminas Mvc](https://docs.laminas.dev/tutorials/getting-started/overview/) application,
+copy `error-hero-module.local.php.dist` config to your local's autoload and configure it***
 
-| source                                                                       | destination                                 |
-|------------------------------------------------------------------------------|---------------------------------------------|
-|  vendor/samsonasik/error-hero-module/config/error-hero-module.local.php.dist | config/autoload/error-hero-module.local.php |
+| source                                                                      | destination                                 |
+|-----------------------------------------------------------------------------|---------------------------------------------|
+| vendor/samsonasik/error-hero-module/config/error-hero-module.local.php.dist | config/autoload/error-hero-module.local.php |
 
 Or run copy command:
 
@@ -124,11 +142,12 @@ Or run copy command:
 cp vendor/samsonasik/error-hero-module/config/error-hero-module.local.php.dist config/autoload/error-hero-module.local.php
 ```
 
-***b. For [Mezzio](https://docs.mezzio.dev/mezzio/) application, copy `mezzio-error-hero-module.local.php.dist` config to your local's autoload and configure it***
+***b. For [Mezzio](https://docs.mezzio.dev/mezzio/) application, copy `mezzio-error-hero-module.local.php.dist` config
+to your local's autoload and configure it***
 
-| source                                                                                  | destination                                            |
-|-----------------------------------------------------------------------------------------|--------------------------------------------------------|
-|  vendor/samsonasik/error-hero-module/config/mezzio-error-hero-module.local.php.dist | config/autoload/mezzio-error-hero-module.local.php |
+| source                                                                             | destination                                        |
+|------------------------------------------------------------------------------------|----------------------------------------------------|
+| vendor/samsonasik/error-hero-module/config/mezzio-error-hero-module.local.php.dist | config/autoload/mezzio-error-hero-module.local.php |
 
 Or run copy command:
 
@@ -136,7 +155,8 @@ Or run copy command:
 cp vendor/samsonasik/error-hero-module/config/mezzio-error-hero-module.local.php.dist config/autoload/mezzio-error-hero-module.local.php
 ```
 
-When done, you can modify logger service named `ErrorHeroModuleLogger` and `error-hero-module` config in your's local config:
+When done, you can modify logger service named `ErrorHeroModuleLogger` and `error-hero-module` config in your's local
+config:
 
 ```php
 <?php
@@ -311,7 +331,8 @@ return [
 
 ***b. For Mezzio application***
 
-For [laminas-mezzio-skeleton](https://github.com/mezzio/mezzio-skeleton) ^3.0.0, you need to open `config/pipeline.php` and add the `ErrorHeroModule\Middleware\Mezzio::class` middleware after default `ErrorHandler::class` registration:
+For [laminas-mezzio-skeleton](https://github.com/mezzio/mezzio-skeleton) ^3.0.0, you need to open `config/pipeline.php`
+and add the `ErrorHeroModule\Middleware\Mezzio::class` middleware after default `ErrorHandler::class` registration:
 
 ```php
 $app->pipe(ErrorHandler::class);
@@ -390,8 +411,10 @@ final class HelloWorld extends BaseLoggingCommand
 
 and register to your services like in the [documentation](https://docs.laminas.dev/laminas-cli/intro/).
 
-> For production env, you can disable error-preview sample page with set `['error-hero-module']['enable-error-preview-page']` to false.
+> For production env, you can disable error-preview sample page with set
+`['error-hero-module']['enable-error-preview-page']` to false.
 
 Contributing
 ------------
-Contributions are very welcome. Please read [CONTRIBUTING.md](https://github.com/samsonasik/ErrorHeroModule/blob/master/CONTRIBUTING.md)
+Contributions are very welcome. Please
+read [CONTRIBUTING.md](https://github.com/samsonasik/ErrorHeroModule/blob/master/CONTRIBUTING.md)

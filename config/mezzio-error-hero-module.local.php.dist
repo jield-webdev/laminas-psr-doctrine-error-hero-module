@@ -20,7 +20,7 @@ use Laminas\ServiceManager\Factory\InvokableFactory;
 
 return [
 
-    'log' => [
+    'psr_log' => [
         'ErrorHeroModuleLogger' => [
             'writers' => [
 

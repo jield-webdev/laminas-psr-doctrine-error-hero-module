@@ -8,12 +8,14 @@ use Doctrine\ORM\EntityManager;
 use ErrorHeroModule\Command\Preview\ErrorPreviewConsoleCommand;
 use ErrorHeroModule\Controller\ErrorPreviewController;
 use ErrorHeroModule\Transformer\Doctrine;
+use Laminas\ModuleManager\Feature\ConfigProviderInterface;
+use Laminas\ModuleManager\Feature\DependencyIndicatorInterface;
 use Laminas\ModuleManager\Listener\ConfigListener;
 use Laminas\ModuleManager\ModuleEvent;
 use Laminas\ModuleManager\ModuleManager;
 use Laminas\ServiceManager\ServiceManager;
 
-final class Module
+final class Module implements ConfigProviderInterface, DependencyIndicatorInterface
 {
     public function init(ModuleManager $moduleManager): void
     {
@@ -28,13 +30,13 @@ final class Module
         $container        = $moduleEvent->getParam('ServiceManager');
         $hasEntityManager = $container->has(EntityManager::class);
 
-        if (! $hasEntityManager) {
+        if (!$hasEntityManager) {
             return;
         }
 
         /** @var array<string, mixed> $configuration */
         $configuration = $container->get('config');
-        $configuration['db'] ?? Doctrine::transform($container, $configuration);
+        Doctrine::transform($container, $configuration);
     }
 
     public function errorPreviewPageHandler(ModuleEvent $moduleEvent): void
@@ -44,7 +46,7 @@ final class Module
         /** @var array $configuration */
         $configuration = $configMerger->getMergedConfig(false);
 
-        if (! isset($configuration['error-hero-module']['enable-error-preview-page'])) {
+        if (!isset($configuration['error-hero-module']['enable-error-preview-page'])) {
             return;
         }
 
@@ -68,5 +70,13 @@ final class Module
     public function getConfig(): array
     {
         return include __DIR__ . '/../config/module.config.php';
+    }
+
+    public function getModuleDependencies(): array
+    {
+        return [
+            'DoctrineModule',
+            'DoctrineORMModule',
+        ];
     }
 }

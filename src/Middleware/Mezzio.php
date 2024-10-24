@@ -20,7 +20,6 @@ use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use Throwable;
-
 use function ErrorHeroModule\detectMessageContentType;
 use function ErrorHeroModule\isExcludedException;
 
@@ -37,18 +36,20 @@ final class Mezzio implements MiddlewareInterface
      * @param array{exclude-exceptions: array, enable: bool, display-settings: array} $errorHeroModuleConfig
      */
     public function __construct(
-        private array $errorHeroModuleConfig,
-        private readonly Logging $logging,
+        private array                               $errorHeroModuleConfig,
+        private readonly Logging                    $logging,
         private readonly ?TemplateRendererInterface $templateRenderer
-    ) {
+    )
+    {
         $this->errorHeroModuleConfig = $errorHeroModuleConfig;
     }
 
     public function process(
-        ServerRequestInterface $serverRequest,
+        ServerRequestInterface  $serverRequest,
         RequestHandlerInterface $requestHandler
-    ): ResponseInterface {
-        if (! $this->errorHeroModuleConfig['enable']) {
+    ): ResponseInterface
+    {
+        if (!$this->errorHeroModuleConfig['enable']) {
             return $requestHandler->handle($serverRequest);
         }
 
@@ -95,7 +96,7 @@ final class Mezzio implements MiddlewareInterface
 
     private function showDefaultView(): Response|HtmlResponse
     {
-        if (! $this->templateRenderer instanceof TemplateRendererInterface) {
+        if (!$this->templateRenderer instanceof TemplateRendererInterface) {
             return $this->responseByConfigMessage('no_template');
         }
 

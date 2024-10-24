@@ -6,6 +6,7 @@ namespace ErrorHeroModule\Transformer;
 
 use Laminas\Db\Adapter\Adapter;
 use Laminas\Log\Logger;
+use Laminas\Log\PsrLoggerAdapter;
 
 abstract class TransformerAbstract
 {
@@ -28,7 +29,7 @@ abstract class TransformerAbstract
         $writers = self::getWriterConfig($configuration);
         $config  = $configuration[self::DB];
 
-        if (! isset($config['adapters'])) {
+        if (!isset($config['adapters'])) {
             return $config;
         }
 
@@ -44,7 +45,7 @@ abstract class TransformerAbstract
             : $config;
     }
 
-    protected static function getLoggerInstance(array $configuration, array $dbConfig): Logger
+    protected static function getLoggerInstance(array $configuration, array $dbConfig): PsrLoggerAdapter
     {
         $writers = self::getWriterConfig($configuration);
         foreach ($writers as &$writer) {
@@ -54,6 +55,6 @@ abstract class TransformerAbstract
             }
         }
 
-        return new Logger(['writers' => $writers]);
+        return new PsrLoggerAdapter(new Logger(['writers' => $writers]));
     }
 }

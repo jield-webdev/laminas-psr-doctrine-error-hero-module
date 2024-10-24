@@ -8,7 +8,6 @@ use Doctrine\ORM\EntityManager;
 use Laminas\ServiceManager\ServiceManager;
 use Psr\Container\ContainerInterface;
 use Webmozart\Assert\Assert;
-
 use function explode;
 use function implode;
 use function rtrim;
@@ -42,7 +41,7 @@ final class Doctrine extends TransformerAbstract implements TransformerInterface
         $driverNamespaces          = explode('\\', $driverClass);
         $fullUnderscoredDriverName = strtolower(implode('_', $driverNamespaces));
         $driverName                = rtrim($fullUnderscoredDriverName, '_driver');
-        [, $driverName]            = explode('driver_', $driverName);
+        [, $driverName] = explode('driver_', $driverName);
 
         $dbAdapterConfig = [
             'username'       => $params['user'],
