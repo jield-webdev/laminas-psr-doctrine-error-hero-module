@@ -12,22 +12,20 @@ use Symfony\Component\Console\Helper\Table;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Throwable;
-
 use function ErrorHeroModule\isExcludedException;
 
 abstract class BaseLoggingCommand extends Command
 {
     use HeroTrait;
 
-    /** @var string */
-    private const DISPLAY_SETTINGS = 'display-settings';
+    private const string DISPLAY_SETTINGS = 'display-settings';
 
     private array $errorHeroModuleConfig;
 
     private Logging $logging;
 
     /**
-     * MUST BE CALLED after __construct(), as service extends this base class may use depedendency injection
+     * MUST BE CALLED after __construct(), as service extends this base class may use dependency injection
      *
      * With `Laminas\ServiceManager`, you don't need to do anything \m/, there is `initializers` config already for it.
      */
@@ -37,6 +35,9 @@ abstract class BaseLoggingCommand extends Command
         $this->logging               = $logging;
     }
 
+    /**
+     * @throws Throwable
+     */
     #[Override]
     public function run(InputInterface $input, OutputInterface $output): int
     {
@@ -52,6 +53,9 @@ abstract class BaseLoggingCommand extends Command
         return $this->showDefaultConsoleView(output: $output);
     }
 
+    /**
+     * @throws Throwable
+     */
     private function exceptionError(Throwable $throwable): void
     {
         if (

@@ -7,6 +7,9 @@ namespace ErrorHeroModule\Handler\Writer;
 use DateTime;
 use Doctrine\Common\Collections\Order;
 use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\Exception\NotSupported;
+use Doctrine\ORM\Exception\ORMException;
+use Doctrine\ORM\OptimisticLockException;
 use ErrorHeroModule\Entity\LogEntityInterface;
 use ErrorHeroModule\Handler\Logging;
 use Laminas\Log\Writer\AbstractWriter;
@@ -15,18 +18,17 @@ use Webmozart\Assert\Assert;
 
 final class DoctrineWriter extends AbstractWriter
 {
-    /** @var string */
-    private const string NAME = 'doctrine';
-
-
-
     public function __construct(protected EntityManager $entityManager, protected array $config = [])
     {
         parent::__construct();
     }
 
+    /**
+     * @throws OptimisticLockException
+     * @throws ORMException
+     */
     #[Override]
-    protected function doWrite(array $event)
+    protected function doWrite(array $event): void
     {
         //Now we can create an entity and persist it
         $entityName = $this->config['logging-settings']['doctrine-entity-name'] ?? 'ErrorHeroModule\Entity\Error';
@@ -52,6 +54,10 @@ final class DoctrineWriter extends AbstractWriter
         $this->entityManager->flush(entity: $log);
     }
 
+    /**
+     * @throws \DateMalformedStringException
+     * @throws NotSupported
+     */
     public function isExists(string $errorFile, int $errorLine, string $errorMessage, string $url, string $errorType): bool
     {
         //We need to know if the error has occurred in the given time windows
