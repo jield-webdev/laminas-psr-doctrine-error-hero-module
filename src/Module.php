@@ -5,8 +5,6 @@ declare(strict_types=1);
 namespace ErrorHeroModule;
 
 use Doctrine\ORM\EntityManager;
-use ErrorHeroModule\Command\Preview\ErrorPreviewConsoleCommand;
-use ErrorHeroModule\Controller\ErrorPreviewController;
 use ErrorHeroModule\Transformer\DoctrineTransformer;
 use Laminas\ModuleManager\Feature\ConfigProviderInterface;
 use Laminas\ModuleManager\Feature\DependencyIndicatorInterface;
@@ -53,8 +51,6 @@ final class Module implements ConfigProviderInterface, DependencyIndicatorInterf
         }
 
         unset(
-            $configuration['controllers']['factories'][ErrorPreviewController::class],
-            $configuration['service_manager']['factories'][ErrorPreviewConsoleCommand::class],
             $configuration['router']['routes']['error-preview'],
             $configuration['laminas-cli']['commands']['errorheromodule:preview']
         );

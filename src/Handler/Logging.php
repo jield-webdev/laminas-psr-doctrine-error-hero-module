@@ -177,7 +177,7 @@ final class Logging
             Logger::NOTICE => LogLevel::NOTICE,
             Logger::INFO   => LogLevel::INFO,
             Logger::DEBUG  => LogLevel::DEBUG,
-            default        => throw new \InvalidArgumentException('Invalid priority level: ' . $legacyPriority),
+            default        => throw new \InvalidArgumentException('Invalid severity level: ' . $severity),
         };
     }
 

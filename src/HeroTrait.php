@@ -8,12 +8,8 @@ use ArrayLookup\AtLeast;
 use ErrorException;
 use ErrorHeroModule\Command\BaseLoggingCommand;
 use ErrorHeroModule\Listener\Mvc;
-use Laminas\Diactoros\Response;
-use Laminas\Diactoros\Response\HtmlResponse;
 use Laminas\Mvc\MvcEvent;
-use Psr\Http\Message\ServerRequestInterface;
 use Webmozart\Assert\Assert;
-
 use function error_get_last;
 use function error_reporting;
 use function ini_set;
@@ -25,7 +21,6 @@ use function ob_start;
 use function register_shutdown_function;
 use function set_error_handler;
 use function str_starts_with;
-
 use const E_ALL;
 use const E_STRICT;
 
@@ -42,7 +37,7 @@ trait HeroTrait
             $this->mvcEvent = $args[0];
         }
 
-        if (! $this->errorHeroModuleConfig['display-settings']['display_errors']) {
+        if (!$this->errorHeroModuleConfig['display-settings']['display_errors']) {
             error_reporting(E_ALL | E_STRICT);
             ini_set('display_errors', '0');
         }
@@ -90,29 +85,17 @@ trait HeroTrait
         if ($this instanceof BaseLoggingCommand) {
             ob_start();
             $this->exceptionError($errorException);
-            $this->result = (string) ob_get_clean();
+            $this->result = (string)ob_get_clean();
 
             return;
         }
 
         // Laminas Mvc project
-        if ($this instanceof Mvc) {
-            Assert::isInstanceOf($this->mvcEvent, MvcEvent::class);
-
-            ob_start();
-            $this->mvcEvent->setParam('exception', $errorException);
-            $this->exceptionError($this->mvcEvent);
-            $this->result = (string) ob_get_clean();
-
-            return;
-        }
-
-        // Mezzio project
-        Assert::implementsInterface($this->request, ServerRequestInterface::class);
-
-        /** @var Response|HtmlResponse $result */
-        $result       = $this->exceptionError($errorException);
-        $this->result = (string) $result->getBody();
+        Assert::isInstanceOf($this->mvcEvent, MvcEvent::class);
+        ob_start();
+        $this->mvcEvent->setParam('exception', $errorException);
+        $this->exceptionError($this->mvcEvent);
+        $this->result = (string)ob_get_clean();
     }
 
     /**
@@ -124,8 +107,7 @@ trait HeroTrait
             return;
         }
 
-        $filter = static fn (mixed $excludePhpError): bool =>
-            $errorType === $excludePhpError ||
+        $filter = static fn(mixed $excludePhpError): bool => $errorType === $excludePhpError ||
             (
                 is_array($excludePhpError)
                 && $excludePhpError[0] === $errorType

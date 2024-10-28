@@ -37,10 +37,9 @@
   ],
   "require": {
     "php": "^8.1 || ^8.2 || ^8.3 || ^8.4",
-    "laminas/laminas-diactoros": "^2.22",
+    "laminas/laminas-diactoros": "^3.5.0",
     "laminas/laminas-log": "^2.16",
     "laminas/laminas-mail": "^2.21",
-    "laminas/laminas-psr7bridge": "^1.8",
     "laminas/laminas-uri": "^2.10",
     "psr/container": "^1.1.2 || 2.0",
     "samsonasik/array-lookup": "^1.0",
