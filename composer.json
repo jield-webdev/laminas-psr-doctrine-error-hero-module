@@ -41,8 +41,8 @@
     "laminas/laminas-log": "^2.16",
     "laminas/laminas-mail": "^2.21",
     "laminas/laminas-uri": "^2.12",
-    "psr/container": "2.0",
     "samsonasik/array-lookup": "^1.0",
+    "doctrine/doctrine-orm-module": "^6.1.0",
     "seld/jsonlint": "^1.9",
     "webmozart/assert": "^1.11"
   },
@@ -56,7 +56,6 @@
   "require-dev": {
     "aura/di": "^3.4 || ^4.2.1",
     "doctrine/dbal": "^3.5.1",
-    "doctrine/doctrine-orm-module": "^6.1.0",
     "laminas/laminas-cli": "^1.7",
     "laminas/laminas-coding-standard": "^2.4",
     "laminas/laminas-form": "^2.16 || ^3.8",
