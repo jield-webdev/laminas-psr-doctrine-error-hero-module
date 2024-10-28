@@ -12,21 +12,21 @@ use Laminas\Log\Writer\Db as DbWriter;
 use function date;
 use function strtotime;
 
-final class Db
+final readonly class Db
 {
     /** @var string */
-    private const OPTIONS = 'options';
+    private const string OPTIONS = 'options';
 
     /** @var string */
-    private const COLUMN = 'column';
+    private const string COLUMN = 'column';
 
     /** @var string */
-    private const EXTRA = 'extra';
+    private const string EXTRA = 'extra';
 
     public function __construct(
-        private readonly DbWriter $dbWriter,
-        private readonly array $configLoggingSettings,
-        private readonly array $logWritersConfig
+        private DbWriter $dbWriter,
+        private array $configLoggingSettings,
+        private array $logWritersConfig
     ) {
     }
 
@@ -38,7 +38,7 @@ final class Db
         string $errorType
     ): bool {
         // db definition
-        $db = Closure::bind(static fn($dbWriter) => $dbWriter->db, null, $this->dbWriter)($this->dbWriter);
+        $db = Closure::bind(closure: static fn($dbWriter) => $dbWriter->db, newThis: null, newScope: $this->dbWriter)($this->dbWriter);
 
         foreach ($this->logWritersConfig as $logWriterConfig) {
             if ($logWriterConfig['name'] === 'db') {
@@ -53,29 +53,29 @@ final class Db
                 $url        = $logWriterConfig[self::OPTIONS][self::COLUMN][self::EXTRA]['url'];
                 $error_type = $logWriterConfig[self::OPTIONS][self::COLUMN][self::EXTRA]['error_type'];
 
-                $tableGateway = new TableGateway($table, $db, null, new ResultSet());
+                $tableGateway = new TableGateway(table: $table, adapter: $db, features: null, resultSetPrototype: new ResultSet());
                 $select       = $tableGateway->getSql()->select();
-                $select->columns([$timestamp]);
-                $select->where([
+                $select->columns(columns: [$timestamp]);
+                $select->where(predicate: [
                     $message    => $errorMessage,
                     $line       => $errorLine,
                     $url        => $errorUrl,
                     $file       => $errorFile,
                     $error_type => $errorType,
                 ]);
-                $select->order($timestamp . ' DESC');
-                $select->limit(1);
+                $select->order(order: $timestamp . ' DESC');
+                $select->limit(limit: 1);
 
                 /** @var ResultSet $resultSet */
-                $resultSet = $tableGateway->selectWith($select);
+                $resultSet = $tableGateway->selectWith(select: $select);
                 if (! ($current = $resultSet->current())) {
                     return false;
                 }
 
                 $first = $current[$timestamp];
-                $last  = date('Y-m-d H:i:s');
+                $last  = date(format: 'Y-m-d H:i:s');
 
-                $diff = strtotime($last) - strtotime((string) $first);
+                $diff = strtotime(datetime: $last) - strtotime(datetime: (string) $first);
                 if ($diff <= $this->configLoggingSettings['same-error-log-time-range']) {
                     return true;
                 }

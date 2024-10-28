@@ -36,12 +36,12 @@
     }
   ],
   "require": {
-    "php": "^8.1 || ^8.2 || ^8.3 || ^8.4",
+    "php": "^8.3 || ^8.4",
     "laminas/laminas-diactoros": "^3.5.0",
     "laminas/laminas-log": "^2.16",
     "laminas/laminas-mail": "^2.21",
-    "laminas/laminas-uri": "^2.10",
-    "psr/container": "^1.1.2 || 2.0",
+    "laminas/laminas-uri": "^2.12",
+    "psr/container": "2.0",
     "samsonasik/array-lookup": "^1.0",
     "seld/jsonlint": "^1.9",
     "webmozart/assert": "^1.11"
@@ -63,16 +63,11 @@
     "laminas/laminas-mvc": "^3.6",
     "laminas/laminas-servicemanager": "^3.20",
     "php-coveralls/php-coveralls": "^2.5.3",
-    "phpstan/phpstan": "^1.9.3",
+    "phpstan/phpstan": "^1.12",
     "phpstan/phpstan-webmozart-assert": "^1.2.2",
     "pimple/pimple": "^3.5",
     "rector/rector": "dev-main",
     "symfony/dependency-injection": "^5.4.16"
-  },
-  "suggest": {
-    "mezzio/mezzio-laminasviewrenderer": "^2.0 to be able to use laminas-view template engine in mezzio ^3.0",
-    "mezzio/mezzio-platesrenderer": "^2.0 to be able to use plates template engine in mezzio ^3.0",
-    "mezzio/mezzio-twigrenderer": "^2.0 to be able to use twig template engine in mezzio ^3.0"
   },
   "config": {
     "bin-dir": "bin",

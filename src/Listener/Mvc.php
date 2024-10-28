@@ -14,6 +14,7 @@ use Laminas\Mvc\MvcEvent;
 use Laminas\Mvc\SendResponseListener;
 use Laminas\Stdlib\RequestInterface;
 use Laminas\View\Renderer\PhpRenderer;
+use Override;
 use Throwable;
 use Webmozart\Assert\Assert;
 use function ErrorHeroModule\detectMessageContentType;
@@ -26,10 +27,10 @@ final class Mvc extends AbstractListenerAggregate
     private ?MvcEvent $mvcEvent = null;
 
     /** @var string */
-    private const DISPLAY_SETTINGS = 'display-settings';
+    private const string DISPLAY_SETTINGS = 'display-settings';
 
     /** @var string */
-    private const MESSAGE = 'message';
+    private const string MESSAGE = 'message';
 
     public function __construct(
         private readonly array       $errorHeroModuleConfig,
@@ -42,6 +43,7 @@ final class Mvc extends AbstractListenerAggregate
     /**
      * @param int $priority
      */
+    #[Override]
     public function attach(EventManagerInterface $events, $priority = 1): void
     {
         if (!$this->errorHeroModuleConfig['enable']) {
@@ -49,16 +51,16 @@ final class Mvc extends AbstractListenerAggregate
         }
 
         // exceptions
-        $this->listeners[] = $events->attach(MvcEvent::EVENT_RENDER_ERROR, [$this, 'exceptionError']);
-        $this->listeners[] = $events->attach(MvcEvent::EVENT_DISPATCH_ERROR, [$this, 'exceptionError'], 100);
+        $this->listeners[] = $events->attach(eventName: MvcEvent::EVENT_RENDER_ERROR, listener: $this->exceptionError(...));
+        $this->listeners[] = $events->attach(eventName: MvcEvent::EVENT_DISPATCH_ERROR, listener: $this->exceptionError(...), priority: 100);
 
         // php errors
-        $this->listeners[] = $events->attach(MvcEvent::EVENT_BOOTSTRAP, [$this, 'phpError']);
+        $this->listeners[] = $events->attach(eventName: MvcEvent::EVENT_BOOTSTRAP, listener: $this->phpError(...));
     }
 
     public function exceptionError(MvcEvent $mvcEvent): void
     {
-        $exception = $mvcEvent->getParam('exception');
+        $exception = $mvcEvent->getParam(name: 'exception');
         if (!$exception instanceof Throwable) {
             return;
         }
@@ -66,8 +68,8 @@ final class Mvc extends AbstractListenerAggregate
         if (
             isset($this->errorHeroModuleConfig[self::DISPLAY_SETTINGS]['exclude-exceptions'])
             && isExcludedException(
-                $this->errorHeroModuleConfig[self::DISPLAY_SETTINGS]['exclude-exceptions'],
-                $exception
+                excludeExceptionsConfig: $this->errorHeroModuleConfig[self::DISPLAY_SETTINGS]['exclude-exceptions'],
+                throwable: $exception
             )
         ) {
             // rely on original mvc process
@@ -75,8 +77,8 @@ final class Mvc extends AbstractListenerAggregate
         }
 
         $this->logging->handleErrorException(
-            $exception,
-            $request = $mvcEvent->getRequest()
+            throwable: $exception,
+            request: $request = $mvcEvent->getRequest()
         );
 
         if ($this->errorHeroModuleConfig[self::DISPLAY_SETTINGS]['display_errors']) {
@@ -85,16 +87,16 @@ final class Mvc extends AbstractListenerAggregate
         }
 
         // show default view if display_errors setting = 0.
-        $this->showDefaultView($mvcEvent, $request);
+        $this->showDefaultView(mvcEvent: $mvcEvent, request: $request);
     }
 
     private function showDefaultView(MvcEvent $mvcEvent, RequestInterface $request): void
     {
-        Assert::isInstanceOf($request, Request::class);
+        Assert::isInstanceOf(value: $request, class: Request::class);
 
         $response = $mvcEvent->getResponse();
-        Assert::isInstanceOf($response, Response::class);
-        $response->setStatusCode(500);
+        Assert::isInstanceOf(value: $response, class: Response::class);
+        $response->setStatusCode(code: 500);
 
         $application    = $mvcEvent->getApplication();
         $eventManager   = $application->getEventManager();
@@ -102,7 +104,7 @@ final class Mvc extends AbstractListenerAggregate
 
         /** @var SendResponseListener $sendResponseListener */
         $sendResponseListener = $serviceLocator->get('SendResponseListener');
-        $sendResponseListener->detach($eventManager);
+        $sendResponseListener->detach(events: $eventManager);
 
         $isXmlHttpRequest = $request->isXmlHttpRequest();
         if (
@@ -110,7 +112,7 @@ final class Mvc extends AbstractListenerAggregate
             isset($this->errorHeroModuleConfig[self::DISPLAY_SETTINGS]['ajax'][self::MESSAGE])
         ) {
             $message     = $this->errorHeroModuleConfig[self::DISPLAY_SETTINGS]['ajax'][self::MESSAGE];
-            $contentType = detectMessageContentType($message);
+            $contentType = detectMessageContentType(message: $message);
 
             $response->getHeaders()->addHeaderLine('Content-type', $contentType);
             $response->setContent($message);
@@ -120,13 +122,13 @@ final class Mvc extends AbstractListenerAggregate
         }
 
         $model = $mvcEvent->getViewModel();
-        $model->setTemplate($this->errorHeroModuleConfig[self::DISPLAY_SETTINGS]['template']['layout']);
+        $model->setTemplate(template: $this->errorHeroModuleConfig[self::DISPLAY_SETTINGS]['template']['layout']);
         $model->setVariable(
-            $model->captureTo(),
-            $this->phpRenderer->render($this->errorHeroModuleConfig[self::DISPLAY_SETTINGS]['template']['view'])
+            name: $model->captureTo(),
+            value: $this->phpRenderer->render(nameOrModel: $this->errorHeroModuleConfig[self::DISPLAY_SETTINGS]['template']['view'])
         );
 
-        $response->setContent($this->phpRenderer->render($model));
+        $response->setContent($this->phpRenderer->render(nameOrModel: $model));
         $response->send();
     }
 }

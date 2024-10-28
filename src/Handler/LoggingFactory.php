@@ -33,7 +33,7 @@ final class LoggingFactory
         if ($mailConfig['enable'] === true) {
             $mailMessageService = $container->get($mailConfig['mail-message']);
             if (!$mailMessageService instanceof Message) {
-                throw new RuntimeException(sprintf(
+                throw new RuntimeException(message: sprintf(
                     'You are enabling email log writer, your "mail-message" config must be instanceof %s',
                     Message::class
                 ));
@@ -41,7 +41,7 @@ final class LoggingFactory
 
             $mailMessageTransport = $container->get($mailConfig['mail-transport']);
             if (!$mailMessageTransport instanceof TransportInterface) {
-                throw new RuntimeException(sprintf(
+                throw new RuntimeException(message: sprintf(
                     'You are enabling email log writer, your "mail-transport" config must implements %s',
                     TransportInterface::class
                 ));
@@ -51,11 +51,11 @@ final class LoggingFactory
         $includeFilesToAttachments = $mailConfig['include-files-to-attachments'] ?? true;
 
         return new Logging(
-            $errorHeroModuleLogger,
-            $errorHeroModuleLocalConfig,
-            $mailMessageService,
-            $mailMessageTransport,
-            $includeFilesToAttachments
+            psrLoggerAdapter: $errorHeroModuleLogger,
+            errorHeroModuleLocalConfig: $errorHeroModuleLocalConfig,
+            message: $mailMessageService,
+            mailMessageTransport: $mailMessageTransport,
+            includeFilesToAttachments: $includeFilesToAttachments
         );
     }
 }

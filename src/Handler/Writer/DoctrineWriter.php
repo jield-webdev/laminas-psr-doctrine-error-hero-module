@@ -4,28 +4,28 @@ declare(strict_types=1);
 
 namespace ErrorHeroModule\Handler\Writer;
 
+use DateTime;
 use Doctrine\Common\Collections\Order;
 use Doctrine\ORM\EntityManager;
 use ErrorHeroModule\Entity\LogEntityInterface;
 use ErrorHeroModule\Handler\Logging;
 use Laminas\Log\Writer\AbstractWriter;
+use Override;
 use Webmozart\Assert\Assert;
 
 final class DoctrineWriter extends AbstractWriter
 {
     /** @var string */
-    private const NAME = 'doctrine';
-    protected EntityManager $entityManager;
-    protected array         $config;
+    private const string NAME = 'doctrine';
 
-    public function __construct(EntityManager $entityManager, array $config = [])
+
+
+    public function __construct(protected EntityManager $entityManager, protected array $config = [])
     {
-        $this->entityManager = $entityManager;
-        $this->config        = $config;
-
         parent::__construct();
     }
 
+    #[Override]
     protected function doWrite(array $event)
     {
         //Now we can create an entity and persist it
@@ -34,22 +34,22 @@ final class DoctrineWriter extends AbstractWriter
         /** @var LogEntityInterface $log */
         $log = new $entityName();
 
-        Assert::isInstanceOf($log, LogEntityInterface::class);
+        Assert::isInstanceOf(value: $log, class: LogEntityInterface::class);
 
-        $priority = Logging::getPsrPrioryFromSeverity($event['priority'], false);
+        $priority = Logging::getPsrPrioryFromSeverity(severity: $event['priority'], fromLegacy: false);
 
-        $log->setDate($event['timestamp']);
-        $log->setPriority($priority);
-        $log->setErrorMessage($event['message']);
-        $log->setUrl($event['extra']['url'] ?? null);
-        $log->setFile($event['extra']['file'] ?? $event['extra']['class']);
-        $log->setLine($event['extra']['line'] ?? null);
-        $log->setErrorType($event['extra']['error_type'] ?? 'Symfony/Message issue');
-        $log->setTrace($event['extra']['trace'] ?? '');
-        $log->setRequestData($event['extra']['request_data'] ?? $event['extra']);
+        $log->setDate(date: $event['timestamp']);
+        $log->setPriority(priority: $priority);
+        $log->setErrorMessage(errorMessage: $event['message']);
+        $log->setUrl(url: $event['extra']['url'] ?? null);
+        $log->setFile(file: $event['extra']['file'] ?? $event['extra']['class']);
+        $log->setLine(line: $event['extra']['line'] ?? null);
+        $log->setErrorType(errorType: $event['extra']['error_type'] ?? 'Symfony/Message issue');
+        $log->setTrace(trace: $event['extra']['trace'] ?? '');
+        $log->setRequestData(requestData: $event['extra']['request_data'] ?? $event['extra']);
 
-        $this->entityManager->persist($log);
-        $this->entityManager->flush($log);
+        $this->entityManager->persist(entity: $log);
+        $this->entityManager->flush(entity: $log);
     }
 
     public function isExists(string $errorFile, int $errorLine, string $errorMessage, string $url, string $errorType): bool
@@ -61,22 +61,17 @@ final class DoctrineWriter extends AbstractWriter
         $entityName = $this->config['logging-settings']['doctrine-entity-name'] ?? 'ErrorHeroModule\Entity\Error';
 
         //The entity has to implement the LogEntityInterface
-        Assert::isInstanceOf(new $entityName(), LogEntityInterface::class);
+        Assert::isInstanceOf(value: new $entityName(), class: LogEntityInterface::class);
 
         //Find the latest error entity
         /** @var LogEntityInterface $latestErrorEntity */
-        $latestErrorEntity = $this->entityManager->getRepository($entityName)->findOneBy([
+        $latestErrorEntity = $this->entityManager->getRepository(entityName: $entityName)->findOneBy(criteria: [
             'file'         => $errorFile,
             'line'         => $errorLine,
             'errorMessage' => $errorMessage,
             'errorType'    => $errorType,
-        ], ['date' => Order::Ascending->value]);
-
+        ], orderBy: ['date' => Order::Ascending->value]);
         //The last entity should exist and should be within the time range
-        if ($latestErrorEntity && $latestErrorEntity->getDate() > new \DateTime('-' . $sameErrorLogTimeRange . ' seconds')) {
-            return true;
-        }
-
-        return false;
+        return $latestErrorEntity && $latestErrorEntity->getDate() > new DateTime(datetime: '-' . $sameErrorLogTimeRange . ' seconds');
     }
 }

@@ -9,6 +9,8 @@ use ErrorHeroModule\Handler\Formatter\Json;
 use ErrorHeroModule\Handler\Writer\DoctrineWriter;
 use ErrorHeroModule\Handler\Writer\Mail;
 use ErrorHeroModule\HeroConstant;
+use Exception;
+use InvalidArgumentException;
 use Laminas\Diactoros\Stream;
 use Laminas\Http\Header\Cookie;
 use Laminas\Http\PhpEnvironment\RemoteAddress;
@@ -39,25 +41,25 @@ final class Logging
     private readonly string $emailSender;
 
     /** @var string */
-    private const PRIORITY = 'priority';
+    private const string PRIORITY = 'priority';
 
     /** @var string */
-    private const ERROR_TYPE = 'errorType';
+    private const string ERROR_TYPE = 'errorType';
 
     /** @var string */
-    private const ERROR_FILE = 'errorFile';
+    private const string ERROR_FILE = 'errorFile';
 
     /** @var string */
-    private const ERROR_LINE = 'errorLine';
+    private const string ERROR_LINE = 'errorLine';
 
     /** @var string */
-    private const TRACE = 'trace';
+    private const string TRACE = 'trace';
 
     /** @var string */
-    private const ERROR_MESSAGE = 'errorMessage';
+    private const string ERROR_MESSAGE = 'errorMessage';
 
     /** @var string */
-    private const SERVER_URL = 'server_url';
+    private const string SERVER_URL = 'server_url';
 
     public function __construct(
         private readonly PsrLoggerAdapter    $psrLoggerAdapter,
@@ -80,7 +82,7 @@ final class Logging
             return [];
         }
 
-        Assert::isInstanceOf($request, HttpRequest::class);
+        Assert::isInstanceOf(value: $request, class: HttpRequest::class);
 
         /** @var ParametersInterface $query */
         $query = $request->getQuery();
@@ -98,7 +100,7 @@ final class Logging
         $queryData     = $query->toArray();
         $requestMethod = $request->getMethod();
         $bodyData      = $post->toArray();
-        $rawData       = str_replace(PHP_EOL, '', $content);
+        $rawData       = str_replace(search: PHP_EOL, replace: '', subject: $content);
         $filesData     = $this->includeFilesToAttachments
             ? $files->toArray()
             : [];
@@ -133,13 +135,13 @@ final class Logging
     private function collectErrorExceptionData(Throwable $throwable): array
     {
         if (
-            $throwable instanceof ErrorException && null !== Logging::getPsrPrioryFromSeverity($throwable->getSeverity())
+            $throwable instanceof ErrorException && null !== Logging::getPsrPrioryFromSeverity(severity: $throwable->getSeverity())
         ) {
             //We need to use the new PSR7 severity level, these can be fetched
             //From the psrPriorityMap in this class
 
 
-            $priority  = Logging::getPsrPrioryFromSeverity($throwable->getSeverity());
+            $priority  = Logging::getPsrPrioryFromSeverity(severity: $throwable->getSeverity());
             $errorType = HeroConstant::ERROR_TYPE[$throwable->getSeverity()];
         } else {
             $priority  = LogLevel::ERROR;
@@ -177,7 +179,7 @@ final class Logging
             Logger::NOTICE => LogLevel::NOTICE,
             Logger::INFO   => LogLevel::INFO,
             Logger::DEBUG  => LogLevel::DEBUG,
-            default        => throw new \InvalidArgumentException('Invalid severity level: ' . $severity),
+            default        => throw new InvalidArgumentException(message: 'Invalid severity level: ' . $severity),
         };
     }
 
@@ -196,12 +198,12 @@ final class Logging
     {
         if (!$request instanceof HttpRequest) {
             $argv      = $_SERVER['argv'] ?? [];
-            $serverUrl = php_uname('n');
-            $url       = $serverUrl . ':' . basename((string)getcwd())
+            $serverUrl = php_uname(mode: 'n');
+            $url       = $serverUrl . ':' . basename(path: (string)getcwd())
                 . ' ' . get_current_user()
                 . '$ ' . PHP_BINARY;
 
-            $params = implode(' ', $argv);
+            $params = implode(separator: ' ', array: $argv);
             $url    .= $params;
         } else {
             $http      = $request->getUri();
@@ -216,7 +218,7 @@ final class Logging
             'line'           => $collectedExceptionData[self::ERROR_LINE],
             'error_type'     => $collectedExceptionData[self::ERROR_TYPE],
             self::TRACE      => $collectedExceptionData[self::TRACE],
-            'request_data'   => $this->getRequestData($request),
+            'request_data'   => $this->getRequestData(request: $request),
         ];
     }
 
@@ -239,10 +241,10 @@ final class Logging
             if ($writer instanceof DoctrineWriter) {
 
                 try {
-                    if ($writer->isExists($errorFile, $errorLine, $errorMessage, $url, $errorType)) {
+                    if ($writer->isExists(errorFile: $errorFile, errorLine: $errorLine, errorMessage: $errorMessage, url: $url, errorType: $errorType)) {
                         return true;
                     }
-                } catch (\Exception $e) {
+                } catch (Exception $e) {
                     throw new ${!${''} = $e::class}($e->getMessage());
                 }
 
@@ -262,41 +264,41 @@ final class Logging
             return;
         }
 
-        $this->message->setFrom($this->emailSender);
-        $this->message->setSubject($subject);
+        $this->message->setFrom(emailOrAddressList: $this->emailSender);
+        $this->message->setSubject(subject: $subject);
 
         $filesData = $extra['request_data']['files_data'] ?? [];
         foreach ($this->emailReceivers as $emailReceiver) {
-            $this->message->setTo($emailReceiver);
+            $this->message->setTo(emailOrAddressList: $emailReceiver);
             $writer = new Mail(
-                $this->message,
-                $this->mailMessageTransport,
-                $filesData
+                mailMessage: $this->message,
+                transport: $this->mailMessageTransport,
+                filesData: $filesData
             );
-            $writer->setFormatter(new Json());
+            $writer->setFormatter(formatter: new Json());
 
-            (new Logger())->addWriter($writer)
-                ->log($priority, $errorMessage, $extra);
+            (new Logger())->addWriter(writer: $writer)
+                ->log(priority: $priority, message: $errorMessage, extra: $extra);
         }
     }
 
     public function handleErrorException(Throwable $throwable, ?RequestInterface $request = null): void
     {
-        $collectedExceptionData = $this->collectErrorExceptionData($throwable);
+        $collectedExceptionData = $this->collectErrorExceptionData(throwable: $throwable);
         /**
          * @var array{url: string, server_url: string, mixed} $extra
          */
-        $extra     = $this->collectErrorExceptionExtraData($collectedExceptionData, $request);
+        $extra     = $this->collectErrorExceptionExtraData(collectedExceptionData: $collectedExceptionData, request: $request);
         $serverUrl = $extra[self::SERVER_URL];
 
         try {
             if (
                 $this->isExists(
-                    $collectedExceptionData[self::ERROR_FILE],
-                    $collectedExceptionData[self::ERROR_LINE],
-                    $collectedExceptionData[self::ERROR_MESSAGE],
-                    $extra['url'],
-                    $collectedExceptionData[self::ERROR_TYPE]
+                    errorFile: $collectedExceptionData[self::ERROR_FILE],
+                    errorLine: $collectedExceptionData[self::ERROR_LINE],
+                    errorMessage: $collectedExceptionData[self::ERROR_MESSAGE],
+                    url: $extra['url'],
+                    errorType: $collectedExceptionData[self::ERROR_TYPE]
                 )
             ) {
                 return;
@@ -305,21 +307,21 @@ final class Logging
             unset($extra[self::SERVER_URL]);
 
             $this->psrLoggerAdapter->log(
-                $collectedExceptionData[self::PRIORITY],
-                $collectedExceptionData[self::ERROR_MESSAGE],
-                $extra
+                level: $collectedExceptionData[self::PRIORITY],
+                message: $collectedExceptionData[self::ERROR_MESSAGE],
+                context: $extra
             );
         } catch (RuntimeException $runtimeException) {
-            $collectedExceptionData = $this->collectErrorExceptionData($runtimeException);
-            $extra                  = $this->collectErrorExceptionExtraData($collectedExceptionData, $request);
+            $collectedExceptionData = $this->collectErrorExceptionData(throwable: $runtimeException);
+            $extra                  = $this->collectErrorExceptionExtraData(collectedExceptionData: $collectedExceptionData, request: $request);
             unset($extra[self::SERVER_URL]);
         }
 
         $this->sendMail(
-            $collectedExceptionData[self::PRIORITY],
-            $collectedExceptionData[self::ERROR_MESSAGE],
-            $extra,
-            '[' . $serverUrl . '] ' . $collectedExceptionData[self::ERROR_TYPE] . ' has thrown'
+            priority: $collectedExceptionData[self::PRIORITY],
+            errorMessage: $collectedExceptionData[self::ERROR_MESSAGE],
+            extra: $extra,
+            subject: '[' . $serverUrl . '] ' . $collectedExceptionData[self::ERROR_TYPE] . ' has thrown'
         );
     }
 }

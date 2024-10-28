@@ -11,6 +11,6 @@ abstract class TransformerAbstract
 {
     protected static function getLoggerInstance(array $writers): PsrLoggerAdapter
     {
-        return new PsrLoggerAdapter(new Logger(['writers' => $writers]));
+        return new PsrLoggerAdapter(logger: new Logger(options: ['writers' => $writers]));
     }
 }

@@ -11,33 +11,36 @@ use Laminas\ModuleManager\Feature\DependencyIndicatorInterface;
 use Laminas\ModuleManager\ModuleEvent;
 use Laminas\ModuleManager\ModuleManager;
 use Laminas\ServiceManager\ServiceManager;
+use Override;
 
 final class Module implements ConfigProviderInterface, DependencyIndicatorInterface
 {
     public function init(ModuleManager $moduleManager): void
     {
         $eventManager = $moduleManager->getEventManager();
-        $eventManager->attach(ModuleEvent::EVENT_LOAD_MODULES_POST, [$this, 'doctrineTransform']);
+        $eventManager->attach(eventName: ModuleEvent::EVENT_LOAD_MODULES_POST, listener: $this->doctrineTransform(...));
     }
 
     public function doctrineTransform(ModuleEvent $moduleEvent): void
     {
         /** @var ServiceManager $container */
-        $container        = $moduleEvent->getParam('ServiceManager');
-        $hasEntityManager = $container->has(EntityManager::class);
+        $container        = $moduleEvent->getParam(name: 'ServiceManager');
+        $hasEntityManager = $container->has(name: EntityManager::class);
 
         if (!$hasEntityManager) {
             return;
         }
 
-        DoctrineTransformer::transform($container);
+        DoctrineTransformer::transform(container: $container);
     }
 
+    #[Override]
     public function getConfig(): array
     {
         return include __DIR__ . '/../config/module.config.php';
     }
 
+    #[Override]
     public function getModuleDependencies(): array
     {
         return [

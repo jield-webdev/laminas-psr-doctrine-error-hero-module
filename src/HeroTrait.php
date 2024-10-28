@@ -31,29 +31,29 @@ trait HeroTrait
     public function phpError(mixed ...$args): void
     {
         if ($this instanceof Mvc) {
-            Assert::count($args, 1);
-            Assert::isInstanceOf($args[0], MvcEvent::class);
+            Assert::count(array: $args, number: 1);
+            Assert::isInstanceOf(value: $args[0], class: MvcEvent::class);
 
             $this->mvcEvent = $args[0];
         }
 
         if (!$this->errorHeroModuleConfig['display-settings']['display_errors']) {
-            error_reporting(E_ALL | E_STRICT);
-            ini_set('display_errors', '0');
+            error_reporting(error_level: E_ALL | E_STRICT);
+            ini_set(option: 'display_errors', value: '0');
         }
 
         while (ob_get_level() > 0) {
             ob_end_flush();
         }
 
-        ob_start([$this, 'phpFatalErrorHandler']);
-        register_shutdown_function([$this, 'execOnShutdown']);
-        set_error_handler([$this, 'phpErrorHandler']);
+        ob_start(callback: [$this, 'phpFatalErrorHandler']);
+        register_shutdown_function(callback: [$this, 'execOnShutdown']);
+        set_error_handler(callback: [$this, 'phpErrorHandler']);
     }
 
     private static function isUncaught(string $message): bool
     {
-        return str_starts_with($message, 'Uncaught');
+        return str_starts_with(haystack: $message, needle: 'Uncaught');
     }
 
     public function phpFatalErrorHandler(string $buffer): string
@@ -63,7 +63,7 @@ trait HeroTrait
             return $buffer;
         }
 
-        return self::isUncaught($error['message']) || $this->result === ''
+        return self::isUncaught(message: $error['message']) || $this->result === ''
             ? $buffer
             : $this->result;
     }
@@ -75,11 +75,11 @@ trait HeroTrait
             return;
         }
 
-        if (self::isUncaught($error['message'])) {
+        if (self::isUncaught(message: $error['message'])) {
             return;
         }
 
-        $errorException = new ErrorException($error['message'], 0, $error['type'], $error['file'], $error['line']);
+        $errorException = new ErrorException(message: $error['message'], code: 0, severity: $error['type'], filename: $error['file'], line: $error['line']);
 
         // laminas-cli
         if ($this instanceof BaseLoggingCommand) {
@@ -91,9 +91,9 @@ trait HeroTrait
         }
 
         // Laminas Mvc project
-        Assert::isInstanceOf($this->mvcEvent, MvcEvent::class);
+        Assert::isInstanceOf(value: $this->mvcEvent, class: MvcEvent::class);
         ob_start();
-        $this->mvcEvent->setParam('exception', $errorException);
+        $this->mvcEvent->setParam(name: 'exception', value: $errorException);
         $this->exceptionError($this->mvcEvent);
         $this->result = (string)ob_get_clean();
     }
@@ -109,15 +109,15 @@ trait HeroTrait
 
         $filter = static fn(mixed $excludePhpError): bool => $errorType === $excludePhpError ||
             (
-                is_array($excludePhpError)
+                is_array(value: $excludePhpError)
                 && $excludePhpError[0] === $errorType
                 && $excludePhpError[1] === $errorMessage
             );
 
-        if (AtLeast::once($this->errorHeroModuleConfig['display-settings']['exclude-php-errors'], $filter)) {
+        if (AtLeast::once(data: $this->errorHeroModuleConfig['display-settings']['exclude-php-errors'], filter: $filter)) {
             return;
         }
 
-        throw new ErrorException($errorMessage, 0, $errorType, $errorFile, $errorLine);
+        throw new ErrorException(message: $errorMessage, code: 0, severity: $errorType, filename: $errorFile, line: $errorLine);
     }
 }

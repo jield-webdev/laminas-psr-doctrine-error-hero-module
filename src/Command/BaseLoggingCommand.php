@@ -6,6 +6,7 @@ namespace ErrorHeroModule\Command;
 
 use ErrorHeroModule\Handler\Logging;
 use ErrorHeroModule\HeroTrait;
+use Override;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Helper\Table;
 use Symfony\Component\Console\Input\InputInterface;
@@ -36,18 +37,19 @@ abstract class BaseLoggingCommand extends Command
         $this->logging               = $logging;
     }
 
+    #[Override]
     public function run(InputInterface $input, OutputInterface $output): int
     {
         try {
             $this->phpError();
-            return parent::run($input, $output);
+            return parent::run(input: $input, output: $output);
         } catch (Throwable $throwable) {
         }
 
-        $this->exceptionError($throwable);
+        $this->exceptionError(throwable: $throwable);
 
         // show default view if display_errors setting = 0.
-        return $this->showDefaultConsoleView($output);
+        return $this->showDefaultConsoleView(output: $output);
     }
 
     private function exceptionError(Throwable $throwable): void
@@ -55,14 +57,14 @@ abstract class BaseLoggingCommand extends Command
         if (
             isset($this->errorHeroModuleConfig[self::DISPLAY_SETTINGS]['exclude-exceptions'])
             && isExcludedException(
-                $this->errorHeroModuleConfig[self::DISPLAY_SETTINGS]['exclude-exceptions'],
-                $throwable
+                excludeExceptionsConfig: $this->errorHeroModuleConfig[self::DISPLAY_SETTINGS]['exclude-exceptions'],
+                throwable: $throwable
             )
         ) {
             throw $throwable;
         }
 
-        $this->logging->handleErrorException($throwable);
+        $this->logging->handleErrorException(throwable: $throwable);
 
         if ($this->errorHeroModuleConfig[self::DISPLAY_SETTINGS]['display_errors']) {
             throw $throwable;
@@ -71,10 +73,10 @@ abstract class BaseLoggingCommand extends Command
 
     private function showDefaultConsoleView(OutputInterface $output): int
     {
-        $table = new Table($output);
-        $table->setColumnMaxWidth(0, 147);
+        $table = new Table(output: $output);
+        $table->setColumnMaxWidth(columnIndex: 0, width: 147);
         $table
-            ->setRows([
+            ->setRows(rows: [
                 [$this->errorHeroModuleConfig[self::DISPLAY_SETTINGS]['console']['message']],
             ]);
         $table->render();

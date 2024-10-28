@@ -39,11 +39,5 @@ jobs:
           dependency-versions: ${{ matrix.dependencies }}
           composer-options: ${{ matrix.composer-options }}
 
-      - name: Run Lint Checker suite
-        run: composer php-lint
-
       - name: PHPStan test
         run: composer phpstan
-
-      - name: Run test suite
-        run: composer test

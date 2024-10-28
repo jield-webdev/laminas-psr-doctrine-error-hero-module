@@ -20,9 +20,9 @@ final class MvcFactory
         $viewRenderer = $container->get('ViewRenderer');
 
         return new Mvc(
-            $config['error-hero-module'],
-            $logging,
-            $viewRenderer
+            errorHeroModuleConfig: $config['error-hero-module'],
+            logging: $logging,
+            phpRenderer: $viewRenderer
         );
     }
 }

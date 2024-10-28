@@ -6,10 +6,12 @@ namespace ErrorHeroModule\Command;
 
 use ErrorHeroModule\Handler\Logging;
 use Laminas\ServiceManager\Initializer\InitializerInterface;
+use Override;
 use Psr\Container\ContainerInterface;
 
 final class BaseLoggingCommandInitializer implements InitializerInterface
 {
+    #[Override]
     public function __invoke(ContainerInterface $container, mixed $instance): void
     {
         if (! $instance instanceof BaseLoggingCommand) {
@@ -22,6 +24,6 @@ final class BaseLoggingCommandInitializer implements InitializerInterface
 
         /** @var Logging $logging */
         $logging = $container->get(Logging::class);
-        $instance->init($errorHeroModuleConfig, $logging);
+        $instance->init(errorHeroModuleConfig: $errorHeroModuleConfig, logging: $logging);
     }
 }

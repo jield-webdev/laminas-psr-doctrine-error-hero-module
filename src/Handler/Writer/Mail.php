@@ -14,6 +14,7 @@ use Laminas\Mime\Message as MimeMessage;
 use Laminas\Mime\Mime;
 use Laminas\Mime\Part;
 
+use Override;
 use function fopen;
 use function implode;
 use function is_array;
@@ -27,7 +28,7 @@ use const PHP_EOL;
 final class Mail extends BaseMail
 {
     /** @var string */
-    private const NAME = 'name';
+    private const string NAME = 'name';
 
     /**
      * @throws LogException\InvalidArgumentException
@@ -37,7 +38,7 @@ final class Mail extends BaseMail
         TransportInterface $transport,
         private readonly array $filesData
     ) {
-        parent::__construct($mailMessage, $transport);
+        parent::__construct(mail: $mailMessage, transport: $transport);
     }
 
     /**
@@ -45,36 +46,37 @@ final class Mail extends BaseMail
      *
      * Override with apply attachment whenever there is $_FILES data
      */
+    #[Override]
     public function shutdown(): void
     {
         // Always provide events to mail as plaintext.
-        $body = implode(PHP_EOL, $this->eventsToMail);
+        $body = implode(separator: PHP_EOL, array: $this->eventsToMail);
 
         if ($this->filesData === []) {
-            $this->mail->setBody($body);
+            $this->mail->setBody(body: $body);
         } else {
-            $mimePart           = new Part($body);
+            $mimePart           = new Part(content: $body);
             $mimePart->type     = Mime::TYPE_TEXT;
             $mimePart->charset  = 'utf-8';
             $mimePart->encoding = Mime::ENCODING_8BIT;
 
             $body = new MimeMessage();
-            $body->addPart($mimePart);
+            $body->addPart(part: $mimePart);
 
-            $body = $this->bodyAddPart($body, $this->filesData);
-            $this->mail->setBody($body);
+            $body = $this->bodyAddPart(mimeMessage: $body, data: $this->filesData);
+            $this->mail->setBody(body: $body);
 
             $headers = $this->mail->getHeaders();
             /** @var ContentType $contentTypeHeader */
-            $contentTypeHeader = $headers->get('Content-Type');
-            $contentTypeHeader->setType('multipart/alternative');
+            $contentTypeHeader = $headers->get(name: 'Content-Type');
+            $contentTypeHeader->setType(type: 'multipart/alternative');
         }
 
         // Finally, send the mail.  If an exception occurs, convert it into a
         // warning-level message so we can avoid an exception thrown without a
         // stack frame.
         try {
-            $this->transport->send($this->mail);
+            $this->transport->send(message: $this->mail);
         } catch (Exception $exception) {
             /** @var string $message */
             $message = $exception->getMessage();
@@ -82,11 +84,11 @@ final class Mail extends BaseMail
             $code = $exception->getCode();
 
             trigger_error(
-                "unable to send log entries via email; "
+                message: "unable to send log entries via email; "
                 . sprintf('message = %s; ', $message)
                 . sprintf('code = %d; ', $code)
                 . "exception class = " . $exception::class,
-                E_USER_WARNING
+                error_level: E_USER_WARNING
             );
         }
     }
@@ -94,12 +96,12 @@ final class Mail extends BaseMail
     private function bodyAddPart(MimeMessage $mimeMessage, array $data): MimeMessage
     {
         foreach ($data as $singleData) {
-            if (key($singleData) === self::NAME && ! is_array($singleData[self::NAME])) {
-                $mimeMessage = $this->singleBodyAddPart($mimeMessage, $singleData);
+            if (key(array: $singleData) === self::NAME && ! is_array(value: $singleData[self::NAME])) {
+                $mimeMessage = $this->singleBodyAddPart(mimeMessage: $mimeMessage, data: $singleData);
                 continue;
             }
 
-            $mimeMessage = $this->bodyAddPart($mimeMessage, $singleData);
+            $mimeMessage = $this->bodyAddPart(mimeMessage: $mimeMessage, data: $singleData);
         }
 
         return $mimeMessage;
@@ -107,12 +109,12 @@ final class Mail extends BaseMail
 
     private function singleBodyAddPart(MimeMessage $mimeMessage, array $data): MimeMessage
     {
-        $mimePart              = new Part(fopen($data['tmp_name'], 'r'));
+        $mimePart              = new Part(content: fopen(filename: $data['tmp_name'], mode: 'r'));
         $mimePart->type        = $data['type'];
         $mimePart->filename    = $data[self::NAME];
         $mimePart->disposition = Mime::DISPOSITION_ATTACHMENT;
         $mimePart->encoding    = Mime::ENCODING_BASE64;
 
-        return $mimeMessage->addPart($mimePart);
+        return $mimeMessage->addPart(part: $mimePart);
     }
 }
