@@ -51,24 +51,19 @@
     "doctrine/doctrine-orm-module": "<4.1",
     "laminas/laminas-mvc": "<3.2|>=4.0",
     "laminas/laminas-servicemanager": "<3.10",
-    "mezzio/mezzio": "<3.3|>=4.0",
     "laminas/laminas-mvc-console": "*"
   },
   "require-dev": {
     "aura/di": "^3.4 || ^4.2.1",
     "doctrine/dbal": "^3.5.1",
     "doctrine/doctrine-orm-module": "^6.1.0",
-    "kahlan/kahlan": "^5.2.2",
     "laminas/laminas-cli": "^1.7",
     "laminas/laminas-coding-standard": "^2.4",
     "laminas/laminas-form": "^2.16 || ^3.8",
     "laminas/laminas-mvc": "^3.6",
     "laminas/laminas-servicemanager": "^3.20",
-    "mezzio/mezzio": "^3.14",
-    "mezzio/mezzio-laminasviewrenderer": "^2.10",
     "php-coveralls/php-coveralls": "^2.5.3",
     "phpstan/phpstan": "^1.9.3",
-    "laminas/laminas-db": "^2.16",
     "phpstan/phpstan-webmozart-assert": "^1.2.2",
     "pimple/pimple": "^3.5",
     "rector/rector": "dev-main",
@@ -102,9 +97,6 @@
     ]
   },
   "autoload-dev": {
-    "psr-4": {
-      "ErrorHeroModule\\Spec\\": "spec/"
-    },
     "files": [
       "vendor/doctrine/dbal/src/Driver/PDO/MySQL/Driver.php"
     ]

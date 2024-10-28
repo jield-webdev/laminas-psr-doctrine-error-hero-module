@@ -8,7 +8,6 @@ use Doctrine\ORM\EntityManager;
 use ErrorHeroModule\Transformer\DoctrineTransformer;
 use Laminas\ModuleManager\Feature\ConfigProviderInterface;
 use Laminas\ModuleManager\Feature\DependencyIndicatorInterface;
-use Laminas\ModuleManager\Listener\ConfigListener;
 use Laminas\ModuleManager\ModuleEvent;
 use Laminas\ModuleManager\ModuleManager;
 use Laminas\ServiceManager\ServiceManager;
@@ -19,7 +18,6 @@ final class Module implements ConfigProviderInterface, DependencyIndicatorInterf
     {
         $eventManager = $moduleManager->getEventManager();
         $eventManager->attach(ModuleEvent::EVENT_LOAD_MODULES_POST, [$this, 'doctrineTransform']);
-        $eventManager->attach(ModuleEvent::EVENT_MERGE_CONFIG, [$this, 'errorPreviewPageHandler'], 101);
     }
 
     public function doctrineTransform(ModuleEvent $moduleEvent): void
@@ -32,30 +30,7 @@ final class Module implements ConfigProviderInterface, DependencyIndicatorInterf
             return;
         }
 
-        DoctrineTransformer::transform($container, $container->get(EntityManager::class));
-    }
-
-    public function errorPreviewPageHandler(ModuleEvent $moduleEvent): void
-    {
-        /** @var ConfigListener $configMerger */
-        $configMerger = $moduleEvent->getConfigListener();
-        /** @var array $configuration */
-        $configuration = $configMerger->getMergedConfig(false);
-
-        if (!isset($configuration['error-hero-module']['enable-error-preview-page'])) {
-            return;
-        }
-
-        if ($configuration['error-hero-module']['enable-error-preview-page']) {
-            return;
-        }
-
-        unset(
-            $configuration['router']['routes']['error-preview'],
-            $configuration['laminas-cli']['commands']['errorheromodule:preview']
-        );
-
-        $configMerger->setMergedConfig($configuration);
+        DoctrineTransformer::transform($container);
     }
 
     public function getConfig(): array

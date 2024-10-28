@@ -3,45 +3,20 @@
 namespace ErrorHeroModule;
 
 use ErrorHeroModule\Command\BaseLoggingCommandInitializer;
-use ErrorHeroModule\Command\Preview\ErrorPreviewConsoleCommand;
-use ErrorHeroModule\Controller\ErrorPreviewController;
 use ErrorHeroModule\Handler\Logging;
 use ErrorHeroModule\Handler\LoggingFactory;
 use ErrorHeroModule\Listener\Mvc;
 use ErrorHeroModule\Listener\MvcFactory;
 use Laminas\Log\PsrLoggerAbstractAdapterFactory;
-use Laminas\ServiceManager\Factory\InvokableFactory;
 
 return [
-    'controllers'     => [
-        'factories' => [
-            ErrorPreviewController::class => InvokableFactory::class,
-        ],
-    ],
-    'router'          => [
-        'routes' => [
-
-            'error-preview' => [
-                'type'    => 'Segment',
-                'options' => [
-                    'route'    => '/error-preview[/][:action]',
-                    'defaults' => [
-                        'controller' => ErrorPreviewController::class,
-                        'action'     => 'exception',
-                    ],
-                ],
-            ],
-
-        ],
-    ],
     'service_manager' => [
         'abstract_factories' => [
             PsrLoggerAbstractAdapterFactory::class,
         ],
         'factories'          => [
-            Mvc::class                        => MvcFactory::class,
-            Logging::class                    => LoggingFactory::class,
-            ErrorPreviewConsoleCommand::class => InvokableFactory::class,
+            Mvc::class     => MvcFactory::class,
+            Logging::class => LoggingFactory::class,
         ],
         'initializers'       => [
             BaseLoggingCommandInitializer::class,
@@ -50,17 +25,9 @@ return [
     'listeners'       => [
         Mvc::class,
     ],
-
-    'laminas-cli' => [
-        'commands' => [
-            'errorheromodule:preview' => ErrorPreviewConsoleCommand::class,
-        ],
-    ],
-
-    'view_manager' => [
+    'view_manager'    => [
         'template_map' => [
             'error-hero-module/error-default' => __DIR__ . '/../view/error-hero-module/error-default.phtml',
         ],
     ],
-
 ];

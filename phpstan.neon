@@ -4,9 +4,5 @@ includes:
 
 parameters:
 	level: 2
-	excludePaths:
-		- src/Command/Preview/ErrorPreviewConsoleCommand.php
-		- src/Controller/ErrorPreviewController.php
-		- src/Middleware/Routed/Preview/ErrorPreviewAction.php
 	reportUnmatchedIgnoredErrors: false
 	treatPhpDocTypesAsCertain: false
