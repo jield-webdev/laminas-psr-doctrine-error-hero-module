@@ -42,7 +42,7 @@
     "laminas/laminas-mail": "^2.21",
     "laminas/laminas-uri": "^2.12",
     "samsonasik/array-lookup": "^1.0",
-    "doctrine/doctrine-orm-module": "^6.1.0",
+    "doctrine/doctrine-orm-module": "^6.1.0 || ^7.0",
     "seld/jsonlint": "^1.9",
     "webmozart/assert": "^1.11"
   },
