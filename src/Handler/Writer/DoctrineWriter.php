@@ -10,6 +10,7 @@ use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\Exception\NotSupported;
 use Doctrine\ORM\Exception\ORMException;
 use Doctrine\ORM\OptimisticLockException;
+use ErrorHeroModule\Entity\Log;
 use ErrorHeroModule\Entity\LogEntityInterface;
 use ErrorHeroModule\Handler\Logging;
 use Laminas\Log\Writer\AbstractWriter;
@@ -31,7 +32,7 @@ final class DoctrineWriter extends AbstractWriter
     protected function doWrite(array $event): void
     {
         //Now we can create an entity and persist it
-        $entityName = $this->config['logging-settings']['doctrine-entity-name'] ?? 'ErrorHeroModule\Entity\Error';
+        $entityName = $this->config['logging-settings']['doctrine-entity-name'] ?? Log::class;
 
         /** @var LogEntityInterface $log */
         $log = new $entityName();
@@ -64,7 +65,7 @@ final class DoctrineWriter extends AbstractWriter
         $sameErrorLogTimeRange = $this->config['logging-settings']['same-error-log-time-range'] ?? 60 * 60 * 24; // 24 hours;
 
         //We also need to know the $entity
-        $entityName = $this->config['logging-settings']['doctrine-entity-name'] ?? 'ErrorHeroModule\Entity\Error';
+        $entityName = $this->config['logging-settings']['doctrine-entity-name'] ?? Log::class;
 
         //The entity has to implement the LogEntityInterface
         Assert::isInstanceOf(value: new $entityName(), class: LogEntityInterface::class);
