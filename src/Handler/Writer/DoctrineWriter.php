@@ -41,11 +41,13 @@ final class DoctrineWriter extends AbstractWriter
 
         $priority = Logging::getPsrPrioryFromSeverity(severity: $event['priority'], fromLegacy: false);
 
+        $file = $event['extra']['file'] ?? $event['extra']['class'] ?? 'N/A';
+
         $log->setDate(date: $event['timestamp']);
         $log->setPriority(priority: $priority);
         $log->setErrorMessage(errorMessage: $event['message']);
         $log->setUrl(url: $event['extra']['url'] ?? null);
-        $log->setFile(file: $event['extra']['file'] ?? $event['extra']['class']);
+        $log->setFile(file: $file);
         $log->setLine(line: $event['extra']['line'] ?? null);
         $log->setErrorType(errorType: $event['extra']['error_type'] ?? 'Symfony/Message issue');
         $log->setTrace(trace: $event['extra']['trace'] ?? '');
