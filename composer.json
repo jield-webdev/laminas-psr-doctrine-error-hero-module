@@ -38,8 +38,8 @@
   "require": {
     "php": "^8.3 || ^8.4",
     "laminas/laminas-diactoros": "^3.5.0",
-    "laminas/laminas-log": "^2.16",
-    "laminas/laminas-mail": "^2.21",
+    "jield-webdev/laminas-log": "dev-develop",
+    "plesk/laminas-mail": "^2.26",
     "laminas/laminas-uri": "^2.12",
     "samsonasik/array-lookup": "^1.0",
     "doctrine/doctrine-orm-module": "^6.1.0 || ^7.0",
@@ -61,9 +61,8 @@
     "laminas/laminas-form": "^2.16 || ^3.8",
     "laminas/laminas-mvc": "^3.6",
     "laminas/laminas-servicemanager": "^3.20",
-    "php-coveralls/php-coveralls": "^2.5.3",
     "phpstan/phpstan": "^2.1.11",
-    "phpstan/phpstan-webmozart-assert": "^1.2.2",
+    "phpstan/phpstan-webmozart-assert": "^2.0.0",
     "pimple/pimple": "^3.5",
     "rector/rector": "dev-main",
     "symfony/dependency-injection": "^5.4.16"
